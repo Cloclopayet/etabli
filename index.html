@@ -1,0 +1,1801 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Établi</title>
+<meta name="description" content="Inventaire d'atelier : photo, reconnaissance des outils, zones de rangement, liste à racheter.">
+<meta name="theme-color" content="#6a4fc4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Établi">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout : app mobile d'abord — en-tête « panneau perforé », contenu 960px max, barre d'onglets fixe en bas. */
+:root {
+  --bg: #eceef0;
+  --panel: #ffffff;
+  --panel-2: #f5f6f7;
+  --ink: #1b2126;
+  --muted: #5b6670;
+  --line: #d3d8dc;
+  --accent: #6a4fc4;
+  --accent-ink: #ffffff;
+  --accent-text: #5a3fb4;
+  --ok: #2d7a4c;
+  --warn: #b8336a;
+  --bad: #b3261e;
+  --dot: rgba(27, 33, 38, .14);
+  --shadow: 0 1px 2px rgba(27, 33, 38, .08), 0 6px 20px rgba(27, 33, 38, .06);
+  --f-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14181b; --panel: #1d2226; --panel-2: #232a2f; --ink: #e7ebee; --muted: #9ba6af;
+    --line: #333c43; --accent: #9d86f0; --accent-ink: #14181b; --accent-text: #b3a1f5;
+    --ok: #5cc28a; --warn: #f27aa8; --bad: #f2776c; --dot: rgba(231, 235, 238, .09);
+    --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14181b; --panel: #1d2226; --panel-2: #232a2f; --ink: #e7ebee; --muted: #9ba6af;
+  --line: #333c43; --accent: #9d86f0; --accent-ink: #14181b; --accent-text: #b3a1f5;
+  --ok: #5cc28a; --warn: #f27aa8; --bad: #f2776c; --dot: rgba(231, 235, 238, .09);
+  --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { color-scheme: light; -webkit-text-size-adjust: 100%; }
+body { margin: 0; -webkit-tap-highlight-color: transparent; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+input, select, textarea { font-size: 16px; } /* évite le zoom auto de Safari iOS */
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); }
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { font-family: var(--f-display); letter-spacing: .01em; text-wrap: balance; margin: 0; line-height: 1.05; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---- En-tête ---- */
+.top {
+  background-color: var(--panel);
+  background-image: radial-gradient(var(--dot) 1.6px, transparent 1.7px);
+  background-size: 18px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.top__in { max-width: 960px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 14px; }
+.brand { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-size: clamp(2.2rem, 7vw, 3rem); font-weight: 800; text-transform: uppercase; }
+.brand h1 span { background: var(--accent); color: var(--accent-ink); padding: 0 .18em; }
+.who { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.who img { width: 24px; height: 24px; border-radius: 50%; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+.stat b { display: block; font: 800 1.6rem/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.stat small { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.stat--alert b { color: var(--warn); }
+
+.banner { max-width: 960px; margin: 12px auto 0; padding: 0 16px; }
+.banner p { margin: 0; padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--line); background: var(--panel-2); font-size: 13.5px; color: var(--muted); }
+.banner p strong { color: var(--ink); }
+
+/* ---- Contenu ---- */
+main { max-width: 960px; margin: 0 auto; padding-inline: 16px; padding-block: 18px calc(96px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 16px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.section-head h2 { font-size: 1.9rem; font-weight: 800; text-transform: uppercase; }
+.lead { color: var(--muted); margin: 4px 0 0; max-width: 62ch; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 500; min-height: 40px; }
+.btn:hover { border-color: var(--muted); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn--main { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
+.btn--main:hover { filter: brightness(1.05); border-color: transparent; }
+.btn--ghost { background: transparent; }
+.btn--danger { color: var(--bad); }
+.btn--danger.is-armed { background: var(--bad); color: #fff; border-color: transparent; }
+.btn--sm { min-height: 32px; padding: 4px 10px; font-size: 13.5px; }
+
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.search { flex: 1 1 240px; min-width: 0; position: relative; }
+.search input { width: 100%; padding: 10px 12px 10px 38px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); min-height: 42px; }
+.search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip i { font-style: normal; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] i { color: inherit; opacity: .7; }
+
+/* Liste d'articles */
+.list { display: grid; gap: 8px; }
+.item { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 8px; }
+.thumb { width: 56px; height: 56px; border-radius: 6px; background: var(--panel-2); object-fit: cover; display: grid; place-items: center; color: var(--muted); font: 600 11px var(--f-mono); overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.item__main { min-width: 0; cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+.item__name { font-weight: 600; overflow-wrap: anywhere; }
+.item__meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.tag { font: 600 11.5px/1 var(--f-mono); padding: 4px 6px; border-radius: 4px; background: var(--accent); color: var(--accent-ink); letter-spacing: .04em; }
+.tag--none { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+.pill { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.pill--low { color: var(--warn); }
+.pill--fix { color: var(--bad); }
+.pill--ex { color: var(--muted); }
+.qty { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.qty button { width: 36px; height: 38px; border: 0; background: var(--panel-2); cursor: pointer; font-size: 18px; line-height: 1; }
+.qty button:hover { background: var(--line); }
+.qty output { min-width: 44px; text-align: center; font: 600 15px var(--f-mono); font-variant-numeric: tabular-nums; padding: 0 4px; }
+.qty output small { display: block; font: 400 10px var(--f-body); color: var(--muted); margin-top: -2px; }
+
+.empty { text-align: center; padding: 36px 16px; border: 2px dashed var(--line); border-radius: var(--r); color: var(--muted); display: grid; gap: 10px; justify-items: center; }
+.empty h3 { font-size: 1.5rem; color: var(--ink); text-transform: uppercase; }
+.empty p { margin: 0; max-width: 46ch; }
+.empty .toolbar { justify-content: center; }
+
+/* Scanner */
+.drop { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 28px 16px; border: 2px dashed var(--line); border-radius: var(--r); background: var(--panel); }
+.drop.is-over { border-color: var(--accent); background: var(--panel-2); }
+.drop p { margin: 0; color: var(--muted); max-width: 48ch; }
+.scan-grid { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.scan-photo { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); display: grid; gap: 8px; }
+.scan-photo img { border-radius: var(--r); border: 1px solid var(--line); width: 100%; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field > span { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); min-height: 40px; }
+.field textarea { min-height: 80px; resize: vertical; }
+.status { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; background: var(--panel-2); color: var(--muted); }
+.spinner { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); animation: spin .9s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.error { color: var(--bad); background: var(--panel-2); border-left: 4px solid var(--bad); padding: 10px 12px; border-radius: 6px; margin: 0; }
+.found { display: grid; gap: 8px; }
+.found-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; }
+.found-row.is-off { opacity: .55; }
+.found-row input[type="checkbox"] { width: 20px; height: 20px; margin-top: 8px; accent-color: var(--accent); }
+.found-fields { display: grid; grid-template-columns: minmax(0, 2fr) 90px minmax(0, 1.4fr); gap: 8px; }
+.found-extra { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.found-extra select { padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); min-height: 32px; }
+.conf { font-family: var(--f-mono); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+
+/* Rangement */
+.zones { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.zone { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+.zone__head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+.zone__code { font: 600 15px/1 var(--f-mono); background: var(--accent); color: var(--accent-ink); padding: 8px 8px; border-radius: 4px; min-width: 40px; text-align: center; letter-spacing: .04em; }
+.zone__name { font-weight: 600; overflow-wrap: anywhere; }
+.zone__type { font-size: 12px; color: var(--muted); }
+.zone ul { list-style: none; margin: 0; padding: 6px 10px 10px; display: grid; gap: 2px; font-size: 14px; }
+.zone li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px dotted var(--line); }
+.zone li:last-child { border-bottom: 0; }
+.zone li button { background: none; border: 0; padding: 0; text-align: left; cursor: pointer; min-width: 0; overflow-wrap: anywhere; }
+.zone li button:hover { text-decoration: underline; }
+.zone li span { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.zone__empty { color: var(--muted); font-size: 13px; padding: 10px; margin: 0; }
+.zone--loose .zone__code { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; }
+.panel h3 { font-size: 1.35rem; text-transform: uppercase; }
+.presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.preset { text-align: left; border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px; padding: 10px 12px; cursor: pointer; display: grid; gap: 4px; }
+.preset:hover { border-color: var(--accent); }
+.preset b { font-weight: 600; }
+.preset small { color: var(--muted); font-size: 12.5px; }
+.plan-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.plan-table th, .plan-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.plan-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.scroll-x { overflow-x: auto; }
+.tips { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.grid3 { display: grid; grid-template-columns: 90px minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+
+/* À racheter */
+.hazard { height: 10px; border-radius: 3px; background: repeating-linear-gradient(-45deg, var(--accent) 0 12px, var(--ink) 12px 24px); }
+.shop { display: grid; gap: 6px; }
+.shop-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.shop-row b { font-weight: 600; overflow-wrap: anywhere; }
+.shop-row .mono { font-family: var(--f-mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Barre d'onglets */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.tabs__in { max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tab { border: 0; background: none; padding: 8px 4px 10px; display: grid; justify-items: center; gap: 2px; cursor: pointer; color: var(--muted); font-size: 12px; font-weight: 500; position: relative; }
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-current="page"] { color: var(--ink); }
+.tab[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 25%; right: 25%; height: 3px; background: var(--accent); border-radius: 0 0 3px 3px; }
+.badge { position: absolute; top: 4px; left: calc(50% + 6px); background: var(--warn); color: #fff; border-radius: 999px; font: 600 10px/16px var(--f-mono); min-width: 16px; padding: 0 4px; }
+
+/* Fenêtre article */
+dialog { border: 0; border-radius: 14px; padding: 0; width: min(560px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); background: var(--panel); color: var(--ink); box-shadow: var(--shadow); }
+dialog::backdrop { background: rgba(10, 12, 14, .55); }
+.dlg { display: grid; gap: 14px; padding: 18px; }
+.dlg h2 { font-size: 1.6rem; text-transform: uppercase; }
+.dlg__photo { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: center; }
+.dlg__photo .thumb { width: 96px; height: 96px; }
+.dlg__foot { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; }
+.file-btn { position: relative; overflow: hidden; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.toast { position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; z-index: 20; max-width: calc(100vw - 32px); box-shadow: var(--shadow); }
+.skeleton { display: grid; gap: 8px; }
+.brand__tools { display: flex; align-items: center; gap: 10px; }
+.gear { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); display: grid; place-items: center; cursor: pointer; color: var(--ink); padding: 0; }
+.gear svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.install { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.install svg { width: 22px; height: 22px; stroke: var(--accent-text); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.key-ok { color: var(--ok); font-weight: 600; }
+.key-missing { color: var(--warn); font-weight: 600; }
+.settings-block { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.settings-block h3 { font-size: 1.1rem; text-transform: uppercase; }
+.mono { font-family: var(--f-mono); }
+
+/* ---- Ludique : couleurs par catégorie, jauge, mouvements ---- */
+.thumb { position: relative; background: color-mix(in srgb, var(--cat, var(--muted)) 16%, var(--panel-2)); color: var(--cat, var(--muted)); }
+.thumb svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.item { border-left: 4px solid var(--cat, var(--line)); transition: transform .15s ease, box-shadow .15s ease; animation: pop-in .25s ease both; }
+.item:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.item--low { background: color-mix(in srgb, var(--warn) 6%, var(--panel)); }
+@keyframes pop-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.qty button:active { transform: scale(.9); }
+.qty output.is-bump { animation: bump .3s ease; }
+@keyframes bump { 30% { transform: scale(1.25); color: var(--accent-text); } }
+.chip { transition: transform .12s ease; }
+.chip:hover { transform: translateY(-1px); }
+.chip .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--cat, var(--muted)); margin-right: 6px; vertical-align: 1px; }
+.gauge { grid-column: 1 / -1; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 6px; }
+.gauge__row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; }
+.gauge__row b { font: 800 1.15rem/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.gauge__row span { color: var(--muted); }
+.gauge__bar { height: 10px; border-radius: 999px; background: var(--panel-2); overflow: hidden; border: 1px solid var(--line); }
+.gauge__fill { height: 100%; border-radius: 999px; background: repeating-linear-gradient(-45deg, var(--accent) 0 8px, color-mix(in srgb, var(--accent) 70%, var(--ink)) 8px 16px); transition: width .6s cubic-bezier(.2,.8,.2,1); }
+.gauge__fill.is-full { background: var(--ok); }
+.zone { transition: box-shadow .15s ease, border-color .15s ease; }
+.zone.is-target { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+.zone li { align-items: center; }
+.zone li[draggable="true"] { cursor: grab; }
+.zone li.is-dragging { opacity: .4; }
+.zone li .li-act { display: flex; gap: 4px; align-items: center; flex: none; }
+.icon-btn { width: 28px; height: 28px; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; display: inline-grid; place-items: center; cursor: pointer; color: var(--muted); padding: 0; flex: none; }
+.icon-btn:hover { color: var(--ink); border-color: var(--muted); }
+.icon-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.item .icon-btn { align-self: center; }
+.zone--loose { border-style: dashed; }
+.zone__count { font: 600 12px var(--f-mono); color: var(--muted); }
+.toast { animation: toast-up .25s ease both; }
+@keyframes toast-up { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.toast--win { background: var(--ok); color: #fff; }
+.empty svg { width: 72px; height: 72px; stroke: var(--accent-text); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.tab svg { transition: transform .15s ease; }
+.tab:hover svg { transform: translateY(-2px); }
+.preset { transition: transform .12s ease; }
+.preset:hover { transform: translateY(-1px); }
+.dlg--sm { max-width: 420px; }
+.dlg__from { font-size: 13px; color: var(--muted); margin: -6px 0 0; }
+dialog.dlg-wide { width: min(820px, calc(100vw - 24px)); }
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; max-height: 52vh; overflow-y: auto; padding: 2px; }
+.cat-tile { display: grid; justify-items: center; gap: 6px; text-align: center; border: 1px solid var(--line); border-left: 4px solid var(--cat, var(--line)); background: var(--panel); border-radius: var(--r); padding: 10px 8px; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; min-width: 0; }
+.cat-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.cat-tile:active { transform: scale(.97); }
+.cat-tile:disabled { opacity: .5; }
+.cat-tile .thumb { width: 52px; height: 52px; }
+.cat-tile .thumb svg { width: 30px; height: 30px; }
+.cat-tile__name { font-size: 13px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.cat-tile__meta { font: 500 11px var(--f-mono); color: var(--muted); }
+@media (max-width: 640px) { .item .icon-btn { grid-column: 1; grid-row: 2; justify-self: start; } .item .qty { grid-column: 2; } }
+
+.skeleton div { height: 74px; border-radius: var(--r); background: var(--panel); border: 1px solid var(--line); }
+
+@media (max-width: 640px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .scan-grid { grid-template-columns: minmax(0, 1fr); }
+  .scan-photo { position: static; }
+  .scan-photo img { max-height: 260px; object-fit: cover; }
+  .found-fields { grid-template-columns: minmax(0, 1fr) 80px; }
+  .found-fields .field:nth-child(3) { grid-column: 1 / -1; }
+  .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); }
+  .item { grid-template-columns: 48px minmax(0, 1fr) auto; }
+  .thumb { width: 48px; height: 48px; }
+  .item .qty { grid-column: 1 / -1; justify-self: end; }
+}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="top__in">
+    <div class="brand">
+      <h1><span>Établi</span> inventaire</h1>
+      <div class="brand__tools">
+        <div class="who" id="who"></div>
+        <button class="gear" data-act="settings" aria-label="Réglages">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+<div class="banner" id="banner" hidden></div>
+
+<main id="view" aria-live="polite">
+  <div class="skeleton" aria-label="Chargement de l'atelier"><div></div><div></div><div></div></div>
+</main>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="tabs__in">
+    <button class="tab" data-tab="inventaire" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/><path d="M7 5v4M12 10v4M16 15v4"/></svg>
+      Inventaire
+    </button>
+    <button class="tab" data-tab="scanner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/></svg>
+      Scanner
+    </button>
+    <button class="tab" data-tab="rangement">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+      Rangement
+    </button>
+    <button class="tab" data-tab="racheter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11h11.2L21 8H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
+      À racheter
+    </button>
+  </div>
+</nav>
+
+<dialog id="dlg"></dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- Référentiels ----------
+  const CATEGORIES = [
+    'Outillage à main', 'Électroportatif', 'Mesure & traçage', 'Quincaillerie',
+    'Consommables', 'Électricité', 'Plomberie', 'Peinture & finition',
+    'Jardin', 'Sécurité & EPI', 'Matériaux', 'Impression 3D', 'Autre'
+  ];
+  // Icône + teinte par catégorie (les teintes sont des HSL sans ancre thème : lisibles clair et sombre via color-mix).
+  const ICON = {
+    hammer: '<path d="M14 6l4 4-8 8-4-4z"/><path d="M12 8L4 16l-1 5 5-1 8-8"/><path d="M15 5l3-3 4 4-3 3"/>',
+    drill: '<path d="M3 9h10v6H3z"/><path d="M13 10h5l3 2-3 2h-5"/><path d="M6 15v5h4v-5"/>',
+    ruler: '<path d="M3 17L17 3l4 4L7 21z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/>',
+    screw: '<circle cx="12" cy="6" r="3"/><path d="M10 6h4M12 9v11"/><path d="M10 12h4M10 15h4M10 18h4"/>',
+    roll: '<circle cx="8" cy="12" r="5"/><path d="M8 7h9a5 5 0 0 1 0 10H8"/><circle cx="8" cy="12" r="1.5"/>',
+    bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+    pipe: '<path d="M4 6h6v12H4z"/><path d="M10 9h10v6H10"/><path d="M20 7v10"/>',
+    brush: '<path d="M4 20c2 0 3-1 3-3l7-7 3 3-7 7c-2 2-3 2-6 0z"/><path d="M14 10l6-6 0 0"/>',
+    leaf: '<path d="M4 20C6 10 12 5 21 4c-1 9-6 15-16 16"/><path d="M4 20l8-8"/>',
+    shield: '<path d="M12 3l8 3v6c0 5-3 8-8 9-5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+    plank: '<path d="M3 8h18v8H3z"/><path d="M8 8v8M16 8v8"/>',
+    spool: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M12 4v5M12 15v5M4 12h5M15 12h5"/>',
+    box: '<path d="M3 8l9-4 9 4-9 4z"/><path d="M3 8v9l9 4 9-4V8"/><path d="M12 12v9"/>'
+  };
+  const CAT_META = {
+    'Outillage à main': { icon: 'hammer', hue: 265 }, 'Électroportatif': { icon: 'drill', hue: 205 },
+    'Mesure & traçage': { icon: 'ruler', hue: 295 }, 'Quincaillerie': { icon: 'screw', hue: 232 },
+    'Consommables': { icon: 'roll', hue: 325 }, 'Électricité': { icon: 'bolt', hue: 185 },
+    'Plomberie': { icon: 'pipe', hue: 165 }, 'Peinture & finition': { icon: 'brush', hue: 345 },
+    'Jardin': { icon: 'leaf', hue: 120 }, 'Sécurité & EPI': { icon: 'shield', hue: 0 },
+    'Matériaux': { icon: 'plank', hue: 90 }, 'Impression 3D': { icon: 'spool', hue: 145 }, 'Autre': { icon: 'box', hue: 0 }
+  };
+  const catColor = (c) => { const m = CAT_META[c] || CAT_META.Autre; return c === 'Autre' ? 'var(--muted)' : `hsl(${m.hue} 55% 45%)`; };
+  const catIcon = (c) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[(CAT_META[c] || CAT_META.Autre).icon]}</svg>`;
+  // Pictogrammes du catalogue (tracés simples, colorés par la catégorie).
+  const PIC = {
+    wago: '<rect x="4" y="7" width="16" height="10" rx="2"/><path d="M8 7V4M12 7V4M16 7V4"/><path d="M7 13h2M11 13h2M15 13h2"/>',
+    bolt: '<path d="M6 4h8l2 2-2 2H6z"/><path d="M8 8v12h4V8"/><path d="M8 11h4M8 14h4M8 17h4"/>',
+    nut: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><circle cx="12" cy="12" r="3"/>',
+    washer: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+    screw: '<path d="M8 3h8l-1 3H9z"/><path d="M10 6v10l2 5 2-5V6"/><path d="M10 9h4M10 12h4M10 15h4"/>',
+    dowel: '<path d="M9 3h6v4l-2 2v9l-1 3-1-3V9L9 7z"/><path d="M9 5h6"/>',
+    nail: '<path d="M8 4h8"/><path d="M12 4v15l-1 2"/><path d="M11 21l1-2"/>',
+    bit: '<path d="M10 3h4v9l-2 9-2-9z"/><path d="M12 12v3"/>',
+    drill: '<path d="M11 3h2v6l1 2-2 10-2-10 1-2z"/><path d="M9 8l6 3M9 12l6 3"/>',
+    disc: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>',
+    tape: '<circle cx="10" cy="12" r="7"/><circle cx="10" cy="12" r="2.5"/><path d="M17 12v5h4"/>',
+    glue: '<path d="M9 3h6v4H9z"/><path d="M8 7h8l1 12H7z"/><path d="M12 11v5"/>',
+    cable: '<path d="M3 12c3-6 6-6 9 0s6 6 9 0"/><path d="M3 12v3M21 12v3"/>',
+    paper: '<path d="M5 4h11l3 3v13H5z"/><path d="M8 9h1M11 9h1M14 9h1M8 13h1M11 13h1M14 13h1M8 17h1M11 17h1M14 17h1"/>',
+    spool: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M12 4v5M12 15v5M4 12h5M15 12h5"/>',
+    battery: '<rect x="4" y="8" width="14" height="9" rx="1"/><path d="M18 11h2v3h-2"/><path d="M8 11v3M11 11v3"/>',
+    blade: '<path d="M6 4h4v16H6z"/><path d="M10 6l2 1-2 1 2 1-2 1 2 1-2 1 2 1-2 1 2 1-2 1"/>',
+    clamp: '<circle cx="12" cy="12" r="8"/><path d="M12 4v4"/><rect x="10" y="2" width="4" height="4" rx="1"/>',
+    hook: '<path d="M12 3v6a4 4 0 0 0 8 0"/><path d="M8 21l4-4 4 4"/><path d="M12 9v8"/>',
+    bulb: '<path d="M9 15a6 6 0 1 1 6 0v3H9z"/><path d="M10 21h4"/>',
+    hinge: '<rect x="5" y="4" width="6" height="16" rx="1"/><rect x="13" y="4" width="6" height="16" rx="1"/><path d="M11 7h2M11 12h2M11 17h2"/>',
+    brushx: '<path d="M6 14l6-11 6 11z"/><path d="M6 14h12v3H6z"/><path d="M8 17v4M12 17v4M16 17v4"/>',
+    mask: '<path d="M4 9c4-3 12-3 16 0v6c-4 3-12 3-16 0z"/><path d="M4 11l-2 1M20 11l2 1"/>'
+  };
+  const CATALOGUE = [
+    // Électricité
+    { nom: 'Wago 2 départs (221-412)', cat: 'Électricité', unite: 'pièce', seuil: 10, pic: 'wago' },
+    { nom: 'Wago 3 départs (221-413)', cat: 'Électricité', unite: 'pièce', seuil: 10, pic: 'wago' },
+    { nom: 'Wago 5 départs (221-415)', cat: 'Électricité', unite: 'pièce', seuil: 5, pic: 'wago' },
+    { nom: 'Domino 6 mm²', cat: 'Électricité', unite: 'pièce', seuil: 5, pic: 'wago' },
+    { nom: 'Câble 3G1,5 mm²', cat: 'Électricité', unite: 'mètre', seuil: 5, pic: 'cable' },
+    { nom: 'Câble 3G2,5 mm²', cat: 'Électricité', unite: 'mètre', seuil: 5, pic: 'cable' },
+    { nom: 'Gaine ICTA Ø 20', cat: 'Électricité', unite: 'mètre', seuil: 5, pic: 'cable' },
+    { nom: 'Ampoule LED E27', cat: 'Électricité', unite: 'pièce', seuil: 1, pic: 'bulb' },
+    { nom: 'Pile AA', cat: 'Électricité', unite: 'pièce', seuil: 4, pic: 'battery' },
+    { nom: 'Batterie 18 V', cat: 'Électroportatif', unite: 'pièce', seuil: 0, pic: 'battery' },
+    // Boulonnerie
+    { nom: 'Boulon M6 × 40', cat: 'Quincaillerie', unite: 'pièce', seuil: 10, pic: 'bolt' },
+    { nom: 'Boulon M8 × 50', cat: 'Quincaillerie', unite: 'pièce', seuil: 10, pic: 'bolt' },
+    { nom: 'Boulon M10 × 60', cat: 'Quincaillerie', unite: 'pièce', seuil: 5, pic: 'bolt' },
+    { nom: 'Écrou M6', cat: 'Quincaillerie', unite: 'pièce', seuil: 10, pic: 'nut' },
+    { nom: 'Écrou M8', cat: 'Quincaillerie', unite: 'pièce', seuil: 10, pic: 'nut' },
+    { nom: 'Écrou M10', cat: 'Quincaillerie', unite: 'pièce', seuil: 5, pic: 'nut' },
+    { nom: 'Rondelle M6', cat: 'Quincaillerie', unite: 'pièce', seuil: 10, pic: 'washer' },
+    { nom: 'Rondelle M8', cat: 'Quincaillerie', unite: 'pièce', seuil: 10, pic: 'washer' },
+    { nom: 'Tige filetée M8 — 1 m', cat: 'Quincaillerie', unite: 'pièce', seuil: 1, pic: 'bolt' },
+    // Vis, chevilles, clous
+    { nom: 'Vis bois 3 × 30 mm', cat: 'Quincaillerie', unite: 'boîte', seuil: 1, pic: 'screw' },
+    { nom: 'Vis bois 4 × 40 mm', cat: 'Quincaillerie', unite: 'boîte', seuil: 1, pic: 'screw' },
+    { nom: 'Vis bois 5 × 60 mm', cat: 'Quincaillerie', unite: 'boîte', seuil: 1, pic: 'screw' },
+    { nom: 'Vis bois 6 × 80 mm', cat: 'Quincaillerie', unite: 'boîte', seuil: 1, pic: 'screw' },
+    { nom: 'Vis placo 3,5 × 25 mm', cat: 'Quincaillerie', unite: 'boîte', seuil: 1, pic: 'screw' },
+    { nom: 'Vis terrasse inox 5 × 50 mm', cat: 'Quincaillerie', unite: 'boîte', seuil: 1, pic: 'screw' },
+    { nom: 'Cheville nylon Ø 6 mm', cat: 'Quincaillerie', unite: 'pièce', seuil: 20, pic: 'dowel' },
+    { nom: 'Cheville nylon Ø 8 mm', cat: 'Quincaillerie', unite: 'pièce', seuil: 20, pic: 'dowel' },
+    { nom: 'Cheville nylon Ø 10 mm', cat: 'Quincaillerie', unite: 'pièce', seuil: 10, pic: 'dowel' },
+    { nom: 'Cheville Molly placo', cat: 'Quincaillerie', unite: 'pièce', seuil: 10, pic: 'dowel' },
+    { nom: 'Cheville à frapper 6 × 40', cat: 'Quincaillerie', unite: 'pièce', seuil: 10, pic: 'dowel' },
+    { nom: 'Clou tête plate 2,5 × 50', cat: 'Quincaillerie', unite: 'boîte', seuil: 1, pic: 'nail' },
+    { nom: 'Pointe tête homme 1,5 × 30', cat: 'Quincaillerie', unite: 'boîte', seuil: 1, pic: 'nail' },
+    { nom: 'Charnière 40 mm', cat: 'Quincaillerie', unite: 'pièce', seuil: 2, pic: 'hinge' },
+    { nom: 'Équerre d\'assemblage 50 mm', cat: 'Quincaillerie', unite: 'pièce', seuil: 4, pic: 'hinge' },
+    { nom: 'Crochet à visser', cat: 'Quincaillerie', unite: 'pièce', seuil: 5, pic: 'hook' },
+    { nom: 'Collier Serflex 12–22 mm', cat: 'Plomberie', unite: 'pièce', seuil: 5, pic: 'clamp' },
+    // Forets, embouts, disques, lames
+    { nom: 'Foret métal HSS Ø 3 mm', cat: 'Consommables', unite: 'pièce', seuil: 2, pic: 'drill' },
+    { nom: 'Foret métal HSS Ø 5 mm', cat: 'Consommables', unite: 'pièce', seuil: 2, pic: 'drill' },
+    { nom: 'Foret bois Ø 6 mm', cat: 'Consommables', unite: 'pièce', seuil: 1, pic: 'drill' },
+    { nom: 'Foret bois Ø 8 mm', cat: 'Consommables', unite: 'pièce', seuil: 1, pic: 'drill' },
+    { nom: 'Foret béton SDS Ø 6 mm', cat: 'Consommables', unite: 'pièce', seuil: 1, pic: 'drill' },
+    { nom: 'Foret béton SDS Ø 8 mm', cat: 'Consommables', unite: 'pièce', seuil: 1, pic: 'drill' },
+    { nom: 'Foret béton SDS Ø 10 mm', cat: 'Consommables', unite: 'pièce', seuil: 1, pic: 'drill' },
+    { nom: 'Embout PH2', cat: 'Consommables', unite: 'pièce', seuil: 3, pic: 'bit' },
+    { nom: 'Embout PZ2', cat: 'Consommables', unite: 'pièce', seuil: 3, pic: 'bit' },
+    { nom: 'Embout Torx T20', cat: 'Consommables', unite: 'pièce', seuil: 2, pic: 'bit' },
+    { nom: 'Embout Torx T25', cat: 'Consommables', unite: 'pièce', seuil: 2, pic: 'bit' },
+    { nom: 'Disque à tronçonner Ø 125 métal', cat: 'Consommables', unite: 'pièce', seuil: 3, pic: 'disc' },
+    { nom: 'Disque à ébarber Ø 125', cat: 'Consommables', unite: 'pièce', seuil: 1, pic: 'disc' },
+    { nom: 'Disque abrasif Ø 125 grain 80', cat: 'Consommables', unite: 'pièce', seuil: 5, pic: 'disc' },
+    { nom: 'Disque abrasif Ø 125 grain 120', cat: 'Consommables', unite: 'pièce', seuil: 5, pic: 'disc' },
+    { nom: 'Disque abrasif Ø 125 grain 180', cat: 'Consommables', unite: 'pièce', seuil: 5, pic: 'disc' },
+    { nom: 'Papier abrasif grain 120', cat: 'Consommables', unite: 'pièce', seuil: 3, pic: 'paper' },
+    { nom: 'Papier abrasif grain 240', cat: 'Consommables', unite: 'pièce', seuil: 3, pic: 'paper' },
+    { nom: 'Lame scie sauteuse bois T101B', cat: 'Consommables', unite: 'pièce', seuil: 2, pic: 'blade' },
+    { nom: 'Lame scie sauteuse métal T118A', cat: 'Consommables', unite: 'pièce', seuil: 2, pic: 'blade' },
+    { nom: 'Lame de cutter 18 mm', cat: 'Consommables', unite: 'pièce', seuil: 5, pic: 'blade' },
+    // Collage, ruban, finition
+    { nom: 'Colle à bois D3 — 250 g', cat: 'Consommables', unite: 'pièce', seuil: 1, pic: 'glue' },
+    { nom: 'Colle néoprène', cat: 'Consommables', unite: 'pièce', seuil: 1, pic: 'glue' },
+    { nom: 'Cartouche silicone sanitaire', cat: 'Plomberie', unite: 'pièce', seuil: 1, pic: 'glue' },
+    { nom: 'Cartouche mastic acrylique', cat: 'Peinture & finition', unite: 'pièce', seuil: 1, pic: 'glue' },
+    { nom: 'Ruban de masquage 38 mm', cat: 'Peinture & finition', unite: 'rouleau', seuil: 1, pic: 'tape' },
+    { nom: 'Ruban adhésif isolant', cat: 'Électricité', unite: 'rouleau', seuil: 1, pic: 'tape' },
+    { nom: 'Gaffer / toile américaine', cat: 'Consommables', unite: 'rouleau', seuil: 1, pic: 'tape' },
+    { nom: 'Téflon plomberie', cat: 'Plomberie', unite: 'rouleau', seuil: 1, pic: 'tape' },
+    { nom: 'Pinceau plat 50 mm', cat: 'Peinture & finition', unite: 'pièce', seuil: 1, pic: 'brushx' },
+    { nom: 'Rouleau laqueur 180 mm', cat: 'Peinture & finition', unite: 'pièce', seuil: 1, pic: 'brushx' },
+    // EPI
+    { nom: 'Masque FFP2', cat: 'Sécurité & EPI', unite: 'pièce', seuil: 5, pic: 'mask' },
+    { nom: 'Gants de travail', cat: 'Sécurité & EPI', unite: 'pièce', seuil: 1, pic: 'mask' },
+    // Impression 3D
+    { nom: 'Filament PLA noir 1,75 mm — 1 kg', cat: 'Impression 3D', unite: 'bobine', seuil: 1, pic: 'spool' },
+    { nom: 'Filament PLA blanc 1,75 mm — 1 kg', cat: 'Impression 3D', unite: 'bobine', seuil: 1, pic: 'spool' },
+    { nom: 'Filament PETG 1,75 mm — 1 kg', cat: 'Impression 3D', unite: 'bobine', seuil: 1, pic: 'spool' },
+    { nom: 'Filament TPU 95A 1,75 mm — 500 g', cat: 'Impression 3D', unite: 'bobine', seuil: 0, pic: 'spool' },
+    { nom: 'Buse laiton 0,4 mm', cat: 'Impression 3D', unite: 'pièce', seuil: 2, pic: 'bit' },
+    { nom: 'Buse acier trempé 0,6 mm', cat: 'Impression 3D', unite: 'pièce', seuil: 1, pic: 'bit' },
+    { nom: 'Sachet dessiccant silica gel', cat: 'Impression 3D', unite: 'sachet', seuil: 2, pic: 'paper' }
+  ];
+  const picSvg = (pic) => PIC[pic] ? `<svg viewBox="0 0 24 24" aria-hidden="true">${PIC[pic]}</svg>` : '';
+  const UNITES = ['pièce', 'boîte', 'sachet', 'lot', 'rouleau', 'bobine', 'litre', 'mètre'];
+  const ETATS = ['bon', 'usé', 'à réparer'];
+  const ZONE_TYPES = ['Mural', 'Établi', 'Étagère', 'Tiroirs', 'Bacs', 'Armoire', 'Caisse', 'Sol / rack'];
+
+  const PRESETS = [
+    {
+      nom: 'Garage / atelier complet',
+      resume: 'Établi, panneau perforé, étagères, bacs à bec, armoire fermée',
+      zones: [
+        { code: 'E', nom: 'Établi — plan de travail', type: 'Établi', description: 'Outils du quotidien à portée de main' },
+        { code: 'P', nom: 'Panneau perforé au-dessus de l\'établi', type: 'Mural', description: 'Outillage à main, mesure' },
+        { code: 'T', nom: 'Servante à tiroirs', type: 'Tiroirs', description: 'Clés, douilles, embouts, petit outillage' },
+        { code: 'B', nom: 'Mur de bacs à bec', type: 'Bacs', description: 'Vis, chevilles, clous, quincaillerie en vrac' },
+        { code: 'S1', nom: 'Étagère haute', type: 'Étagère', description: 'Consommables, pièces de rechange' },
+        { code: 'S2', nom: 'Étagère basse — lourd', type: 'Étagère', description: 'Électroportatif en coffrets, matériaux' },
+        { code: 'X', nom: 'Armoire fermée', type: 'Armoire', description: 'Peintures, solvants, produits dangereux' },
+        { code: 'L', nom: 'Mur long', type: 'Sol / rack', description: 'Serre-joints, niveaux longs, échelle' }
+      ]
+    },
+    {
+      nom: 'Coin maker / impression 3D',
+      resume: 'Imprimante, bobines au sec, électronique, post-traitement',
+      zones: [
+        { code: '3D', nom: 'Table imprimante 3D', type: 'Établi', description: 'Imprimante, spatule, pince coupante, buses' },
+        { code: 'F', nom: 'Boîte sèche à filaments', type: 'Caisse', description: 'Bobines de filament par matière et couleur' },
+        { code: 'EL', nom: 'Tiroirs électronique', type: 'Tiroirs', description: 'Composants, câbles, fer à souder' },
+        { code: 'PT', nom: 'Étagère post-traitement', type: 'Étagère', description: 'Ponçage, colles, peintures pour pièces' },
+        { code: 'P', nom: 'Panneau perforé', type: 'Mural', description: 'Outillage à main' }
+      ]
+    },
+    {
+      nom: 'Coin bricolage (placard)',
+      resume: 'Pour un appartement : caisse, organiseur, étagère, porte',
+      zones: [
+        { code: 'C1', nom: 'Caisse à outils principale', type: 'Caisse', description: 'L\'essentiel pour une intervention' },
+        { code: 'C2', nom: 'Organiseur à compartiments', type: 'Bacs', description: 'Vis, chevilles, petites pièces' },
+        { code: 'C3', nom: 'Étagère du placard', type: 'Étagère', description: 'Perceuse, consommables, colles' },
+        { code: 'C4', nom: 'Crochets sur la porte', type: 'Mural', description: 'Scie, niveau, mètre' }
+      ]
+    },
+    {
+      nom: 'Atelier bois',
+      resume: 'Machines, serre-joints, bois debout, abrasifs',
+      zones: [
+        { code: 'E', nom: 'Établi de menuisier', type: 'Établi', description: 'Rabots, ciseaux, traçage' },
+        { code: 'P', nom: 'Panneau perforé', type: 'Mural', description: 'Scies, équerres, maillets' },
+        { code: 'M', nom: 'Rack machines', type: 'Étagère', description: 'Scie plongeante, défonceuse, ponceuses' },
+        { code: 'SJ', nom: 'Rack serre-joints', type: 'Mural', description: 'Serre-joints par taille' },
+        { code: 'BO', nom: 'Rack bois debout', type: 'Sol / rack', description: 'Tasseaux, chutes, panneaux' },
+        { code: 'A', nom: 'Armoire abrasifs & colles', type: 'Armoire', description: 'Papiers par grain, colles, huiles' },
+        { code: 'B', nom: 'Bacs quincaillerie', type: 'Bacs', description: 'Vis bois, charnières, tourillons' }
+      ]
+    }
+  ];
+
+  // ---------- État ----------
+  let state = {
+    phase: 'loading',          // loading | live | demo
+    tab: 'inventaire',
+    items: [], zones: [],
+    q: '', cat: 'all',
+    scan: { file: null, url: null, zoneId: '', busy: false, error: '', results: null, remarque: '' },
+    plan: { busy: false, error: '', notes: '', proposal: null, applying: false },
+    canImages: false
+  };
+  const SDK_URL = 'https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.129.0/+esm';
+  const MODEL = 'claude-opus-5-5';
+  const LS = { key: 'etabli.apiKey', name: 'etabli.name', installHidden: 'etabli.installHidden', lastBackup: 'etabli.lastBackup' };
+  const lsGet = (k) => { try { return localStorage.getItem(k) || ''; } catch (_) { return ''; } };
+  const lsSet = (k, v) => { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (_) {} };
+  const photoCache = new Map();
+  let scanCtl = null, planCtl = null;
+
+  const setState = (patch) => { state = { ...state, ...patch }; render(); };
+  const setScan = (patch) => { state = { ...state, scan: { ...state.scan, ...patch } }; render(); };
+  const setPlan = (patch) => { state = { ...state, plan: { ...state.plan, ...patch } }; render(); };
+
+  // ---------- Outils ----------
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const now = () => new Date().toISOString();
+  const num = (v, d = 0) => { const n = Number(String(v).replace(',', '.')); return Number.isFinite(n) ? n : d; };
+  const zoneById = (id) => state.zones.find((z) => z.id === id) || null;
+  const isLow = (it) => num(it.seuil) > 0 && num(it.quantite) <= num(it.seuil);
+  const byName = (a, b) => a.nom.localeCompare(b.nom, 'fr');
+  const byZone = (a, b) => (num(a.ordre, 999) - num(b.ordre, 999)) || String(a.code).localeCompare(String(b.code), 'fr', { numeric: true });
+
+  let toastTimer = null;
+  function toast(msg, kind) {
+    const t = $('#toast');
+    t.textContent = msg; t.hidden = false;
+    t.classList.toggle('toast--win', kind === 'win');
+    t.style.animation = 'none'; void t.offsetWidth; t.style.animation = '';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+  }
+
+  function dbMessage(e) {
+    const name = e && (e.name || e.code);
+    if (name === 'QuotaExceededError') return 'La mémoire de l\'iPhone réservée à Établi est pleine. Supprimez des photos ou faites une sauvegarde puis un nettoyage.';
+    return 'Enregistrement impossible. Fermez puis rouvrez l\'application.';
+  }
+
+  // ---------- Stockage local (IndexedDB, sur l'appareil) ----------
+  const STORES = ['items', 'zones', 'photos'];
+  const idb = {
+    db: null,
+    open() {
+      if (this.db) return Promise.resolve(this.db);
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('etabli', 1);
+        req.onupgradeneeded = () => STORES.forEach((n) => { if (!req.result.objectStoreNames.contains(n)) req.result.createObjectStore(n, { keyPath: 'id' }); });
+        req.onsuccess = () => { this.db = req.result; resolve(this.db); };
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async run(name, mode, fn) {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(name, mode);
+        const req = fn(tx.objectStore(name));
+        tx.oncomplete = () => resolve(req && req.result);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    },
+    all(name) { return this.run(name, 'readonly', (st) => st.getAll()); },
+    get(name, id) { return this.run(name, 'readonly', (st) => st.get(id)); },
+    put(name, rec) { return this.run(name, 'readwrite', (st) => st.put(rec)); },
+    del(name, id) { return this.run(name, 'readwrite', (st) => st.delete(id)); },
+    async replaceAll(name, recs) {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(name, 'readwrite');
+        const st = tx.objectStore(name);
+        st.clear();
+        recs.forEach((r) => st.put(r));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    }
+  };
+  const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+
+  const store = {
+    async add(col, data) {
+      const rec = { id: newId(), ...data };
+      await idb.put(col, rec);
+      setState({ [col]: [...state[col], rec] });
+      return rec.id;
+    },
+    async update(col, id, patch) {
+      const cur = state[col].find((x) => x.id === id);
+      if (!cur) return;
+      const rec = { ...cur, ...patch };
+      await idb.put(col, rec);
+      setState({ [col]: state[col].map((x) => (x.id === id ? rec : x)) });
+    },
+    async remove(col, id) {
+      await idb.del(col, id);
+      setState({ [col]: state[col].filter((x) => x.id !== id) });
+    },
+    async addPhoto(dataUrl) {
+      const id = newId();
+      await idb.put('photos', { id, data: dataUrl, createdAt: now() });
+      photoCache.set(id, dataUrl);
+      return id;
+    },
+    async getPhoto(id) {
+      if (photoCache.has(id)) return photoCache.get(id);
+      const rec = await idb.get('photos', id);
+      const url = rec ? rec.data : null;
+      photoCache.set(id, url);
+      return url;
+    },
+    async removePhotoIfOrphan(id, exceptItemId) {
+      if (!id || state.items.some((it) => it.photoId === id && it.id !== exceptItemId)) return;
+      photoCache.delete(id);
+      await idb.del('photos', id);
+    }
+  };
+
+  async function safe(fn, okMsg) {
+    try { const r = await fn(); if (okMsg) toast(okMsg); return r === undefined ? true : r; }
+    catch (e) { console.error(e); toast(dbMessage(e)); return undefined; }
+  }
+
+  // ---------- Claude (API Anthropic, clé personnelle stockée sur l'iPhone) ----------
+  let sdkPromise = null;
+  const loadSdk = () => (sdkPromise = sdkPromise || import(SDK_URL).catch((e) => { sdkPromise = null; throw e; }));
+  const hasKey = () => !!lsGet(LS.key);
+  const blobToBase64 = (blob) => new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1]);
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(blob);
+  });
+
+  // Une requête : prompt (+ image JPEG facultative) -> objet JSON conforme au schéma.
+  async function askClaude(prompt, { schema, image, signal }) {
+    const apiKey = lsGet(LS.key);
+    if (!apiKey) throw { code: 'no_key' };
+    let mod;
+    try { mod = await loadSdk(); } catch (_) { throw { code: 'offline' }; }
+    const Anthropic = mod.default;
+    const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+    const content = [];
+    if (image) content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: await blobToBase64(image) } });
+    content.push({ type: 'text', text: prompt });
+    let response;
+    try {
+      response = await client.beta.messages.create({
+        model: MODEL,
+        max_tokens: 16000,
+        betas: ['server-side-fallback-2026-07-01'],
+        fallbacks: 'default',
+        output_config: { effort: 'medium', format: { type: 'json_schema', schema } },
+        messages: [{ role: 'user', content }]
+      }, { signal });
+    } catch (e) {
+      if (e instanceof Anthropic.APIUserAbortError) throw { code: 'cancelled' };
+      if (e instanceof Anthropic.AuthenticationError) throw { code: 'bad_key' };
+      if (e instanceof Anthropic.PermissionDeniedError) throw { code: 'bad_key' };
+      if (e instanceof Anthropic.RateLimitError) throw { code: 'rate_limited' };
+      if (e instanceof Anthropic.BadRequestError) throw { code: /credit/i.test(e.message || '') ? 'no_credit' : 'bad_request', message: e.message };
+      if (e instanceof Anthropic.APIConnectionError) throw { code: 'offline' };
+      if (e instanceof Anthropic.APIError) throw { code: 'upstream', message: e.message };
+      throw e;
+    }
+    if (response.stop_reason === 'refusal') throw { code: 'refused' };
+    if (response.stop_reason === 'max_tokens') throw { code: 'truncated' };
+    const text = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
+    try { return JSON.parse(text); } catch (_) { throw { code: 'invalid_json' }; }
+  }
+
+  function aiMessage(e, what) {
+    const code = e && e.code;
+    return ({
+      no_key: 'Ajoutez votre clé API Claude dans les réglages (roue dentée en haut).',
+      bad_key: 'La clé API est refusée. Vérifiez-la dans les réglages.',
+      no_credit: 'Votre compte API n\'a plus de crédit. Rechargez-le sur console.anthropic.com.',
+      rate_limited: 'Trop de demandes pour l\'instant. Réessayez dans une minute.',
+      offline: 'Pas de connexion internet. L\'analyse a besoin du réseau ; le reste de l\'application marche hors ligne.',
+      refused: `Claude n\'a pas pu traiter ${what}. Essayez autrement.`,
+      truncated: 'La réponse était trop longue. Essayez avec moins d\'objets à la fois.',
+      invalid_json: 'La réponse n\'a pas pu être lue. Relancez.',
+      bad_request: 'La demande a été refusée par l\'API. Relancez ; si ça persiste, changez de photo.'
+    })[code] || (e && e.message === 'image' ? 'Ce fichier image ne peut pas être ouvert. Choisissez une photo JPEG ou PNG.' : 'L\'opération a échoué. Réessayez.');
+  }
+
+  const SCAN_SCHEMA = () => ({
+    type: 'object',
+    properties: {
+      articles: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            nom: { type: 'string' },
+            categorie: { type: 'string', enum: CATEGORIES },
+            quantite: { type: 'number' },
+            unite: { type: 'string', enum: UNITES },
+            marque: { type: 'string' },
+            etat: { type: 'string', enum: ETATS },
+            consommable: { type: 'boolean' },
+            confiance: { type: 'number' }
+          },
+          required: ['nom', 'categorie', 'quantite', 'unite', 'marque', 'etat', 'consommable', 'confiance'],
+          additionalProperties: false
+        }
+      },
+      remarque: { type: 'string' }
+    },
+    required: ['articles', 'remarque'],
+    additionalProperties: false
+  });
+  const PLAN_SCHEMA = () => ({
+    type: 'object',
+    properties: {
+      zones: { type: 'array', items: { type: 'object', properties: { code: { type: 'string' }, nom: { type: 'string' }, type: { type: 'string', enum: ZONE_TYPES }, description: { type: 'string' } }, required: ['code', 'nom', 'type', 'description'], additionalProperties: false } },
+      affectations: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, zone: { type: 'string' }, emplacement: { type: 'string' } }, required: ['id', 'zone', 'emplacement'], additionalProperties: false } },
+      conseils: { type: 'array', items: { type: 'string' } }
+    },
+    required: ['zones', 'affectations', 'conseils'],
+    additionalProperties: false
+  });
+
+  // ---------- Images ----------
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => resolve({ img, url });
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+      img.src = url;
+    });
+  }
+  function drawScaled(img, max) {
+    const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  }
+  const toThumb = (img) => drawScaled(img, 360).toDataURL('image/jpeg', 0.66);
+  const toJpegBlob = (img) => new Promise((res) => drawScaled(img, 1600).toBlob(res, 'image/jpeg', 0.85));
+
+  async function hydratePhotos() {
+    const imgs = document.querySelectorAll('[data-photo]:not([data-loaded])');
+    for (const el of imgs) {
+      el.setAttribute('data-loaded', '1');
+      const id = el.getAttribute('data-photo');
+      try {
+        const url = await store.getPhoto(id);
+        if (url) el.innerHTML = `<img alt="" src="${esc(url)}">`;
+      } catch (e) { console.error(e); }
+    }
+  }
+
+  // ---------- Rendu ----------
+  function render() {
+    const active = document.activeElement;
+    const focusId = active && active.id ? active.id : null;
+    const sel = focusId && typeof active.selectionStart === 'number' ? [active.selectionStart, active.selectionEnd] : null;
+
+    renderStats();
+    document.querySelectorAll('.tab').forEach((t) => {
+      if (t.dataset.tab === state.tab) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
+    });
+    const low = state.items.filter(isLow).length;
+    const tabBuy = $('.tab[data-tab="racheter"]');
+    const oldBadge = tabBuy.querySelector('.badge');
+    if (oldBadge) oldBadge.remove();
+    if (low) tabBuy.insertAdjacentHTML('beforeend', `<span class="badge">${low}</span>`);
+
+    const view = $('#view');
+    if (state.phase === 'loading') {
+      view.innerHTML = '<div class="skeleton" aria-label="Chargement de l\'atelier"><div></div><div></div><div></div></div>';
+    } else {
+      view.innerHTML = ({ inventaire: viewInventaire, scanner: viewScanner, rangement: viewRangement, racheter: viewRacheter })[state.tab]();
+    }
+
+    if (focusId) {
+      const el = document.getElementById(focusId);
+      if (el && el !== document.activeElement) {
+        el.focus();
+        if (sel && typeof el.setSelectionRange === 'function') { try { el.setSelectionRange(sel[0], sel[1]); } catch (_) {} }
+      }
+    }
+    hydratePhotos();
+  }
+
+  function renderStats() {
+    const items = state.items;
+    const pieces = items.reduce((s, it) => s + num(it.quantite), 0);
+    const low = items.filter(isLow).length;
+    const ranged = items.filter((it) => zoneById(it.zoneId)).length;
+    const pct = items.length ? Math.round(100 * ranged / items.length) : 0;
+    const mot = !items.length ? 'Photographiez un premier tiroir pour commencer.'
+      : pct === 100 ? 'Tout est à sa place. Chapeau !'
+      : pct >= 75 ? `Encore ${items.length - ranged} à ranger et c'est parfait.`
+      : pct >= 40 ? 'Bien parti. Un tiroir par soir et c\'est réglé.'
+      : 'L\'onglet Rangement vous propose un plan en un clic.';
+    $('#stats').innerHTML = `
+      <div class="stat"><b>${items.length}</b><small>Articles</small></div>
+      <div class="stat"><b>${Math.round(pieces)}</b><small>Unités</small></div>
+      <div class="stat"><b>${state.zones.length}</b><small>Zones</small></div>
+      <div class="stat${low ? ' stat--alert' : ''}"><b>${low}</b><small>Stock bas</small></div>
+      <div class="gauge"><div class="gauge__row"><div><b>${pct} %</b> rangé</div><span>${esc(mot)}</span></div>
+        <div class="gauge__bar"><div class="gauge__fill${pct === 100 && items.length ? ' is-full' : ''}" style="width:${pct}%"></div></div></div>`;
+  }
+
+  const searchIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+
+  function zoneTag(it) {
+    const z = zoneById(it.zoneId);
+    return z ? `<span class="tag" title="${esc(z.nom)}">${esc(z.code)}</span>` : '<span class="tag tag--none">non rangé</span>';
+  }
+
+  function itemRow(it) {
+    const meta = [];
+    meta.push(zoneTag(it));
+    if (it.emplacement) meta.push(`<span>${esc(it.emplacement)}</span>`);
+    meta.push(`<span>${esc(it.categorie || 'Autre')}</span>`);
+    if (isLow(it)) meta.push('<span class="pill pill--low">stock bas</span>');
+    if (it.etat === 'à réparer') meta.push('<span class="pill pill--fix">à réparer</span>');
+    const cat = it.categorie || 'Autre';
+    const thumb = it.photoId ? `<div class="thumb" data-photo="${esc(it.photoId)}">${picSvg(it.pic) || catIcon(cat)}</div>` : `<div class="thumb" title="${esc(cat)}">${picSvg(it.pic) || catIcon(cat)}</div>`;
+    return `
+      <article class="item${isLow(it) ? ' item--low' : ''}" style="--cat:${catColor(cat)}">
+        ${thumb}
+        <button class="item__main" data-act="edit" data-id="${esc(it.id)}">
+          <div class="item__name">${esc(it.nom)}</div>
+          <div class="item__meta">${meta.join('')}</div>
+        </button>
+        <div class="qty" aria-label="Quantité de ${esc(it.nom)}">
+          <button data-act="dec" data-id="${esc(it.id)}" aria-label="Retirer un">−</button>
+          <output>${esc(fmtQty(it.quantite))}<small>${esc(it.unite || 'pièce')}</small></output>
+          <button data-act="inc" data-id="${esc(it.id)}" aria-label="Ajouter un">+</button>
+        </div>
+        <button class="icon-btn" data-act="move" data-id="${esc(it.id)}" title="Déplacer" aria-label="Déplacer ${esc(it.nom)}">${ICON_MOVE}</button>
+      </article>`;
+  }
+  const ICON_MOVE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>';
+  const fmtQty = (q) => { const n = num(q); return Number.isInteger(n) ? String(n) : n.toFixed(1).replace('.', ','); };
+
+  function filteredItems() {
+    const q = norm(state.q);
+    return state.items
+      .filter((it) => state.cat === 'all' || (it.categorie || 'Autre') === state.cat)
+      .filter((it) => {
+        if (!q) return true;
+        const z = zoneById(it.zoneId);
+        return norm([it.nom, it.marque, it.emplacement, it.notes, it.categorie, z && z.code, z && z.nom].join(' ')).includes(q);
+      })
+      .sort(byName);
+  }
+
+  function viewInventaire() {
+    const counts = {};
+    state.items.forEach((it) => { const c = it.categorie || 'Autre'; counts[c] = (counts[c] || 0) + 1; });
+    const cats = CATEGORIES.filter((c) => counts[c]);
+    const list = filteredItems();
+    const head = `
+      <div class="section-head">
+        <div><h2>Inventaire</h2><p class="lead">Cherchez un outil pour savoir où il est rangé. Touchez un article pour le modifier.</p></div>
+        <div class="row">
+          <button class="btn" data-act="new">+ Article</button>
+          <button class="btn" data-act="catalogue">Catalogue</button>
+          <button class="btn btn--main" data-act="goto" data-tab="scanner">Scanner une photo</button>
+        </div>
+      </div>`;
+    if (!state.items.length) {
+      return head + `
+        <div class="empty">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 10l2-5h14l2 5"/><path d="M9 14h6"/><path d="M12 5v5"/></svg>
+          <h3>Votre atelier est vide</h3>
+          <p>Photographiez une étagère, un tiroir ou une caisse à outils : Claude reconnaît les articles et compte les quantités. Ou piochez dans le catalogue (Wago, boulons M6, chevilles, forets, filaments…) : un clic, c'est ajouté.</p>
+          <div class="toolbar">
+            <button class="btn btn--main" data-act="goto" data-tab="scanner">Scanner une photo</button>
+            <button class="btn" data-act="catalogue">Piocher dans le catalogue</button>
+            <button class="btn" data-act="new">Ajouter à la main</button>
+          </div>
+        </div>`;
+    }
+    return head + `
+      <div class="toolbar">
+        <label class="search">${searchIcon}<input id="q" type="search" placeholder="Où est ma scie cloche ?" value="${esc(state.q)}" autocomplete="off" aria-label="Rechercher un article"></label>
+        <button class="btn" data-act="csv">Exporter CSV</button>
+      </div>
+      <div class="chips" role="group" aria-label="Catégories">
+        <button class="chip" data-act="cat" data-cat="all" aria-pressed="${state.cat === 'all'}">Tout<i>${state.items.length}</i></button>
+        ${cats.map((c) => `<button class="chip" data-act="cat" data-cat="${esc(c)}" aria-pressed="${state.cat === c}" style="--cat:${catColor(c)}"><span class="dot"></span>${esc(c)}<i>${counts[c]}</i></button>`).join('')}
+      </div>
+      <div class="list">
+        ${list.length ? list.map(itemRow).join('') : `<p class="note">Aucun article ne correspond à « ${esc(state.q)} ».</p>`}
+      </div>`;
+  }
+
+  // ---------- Scanner ----------
+  function zoneOptions(selected, emptyLabel = 'Non rangé') {
+    return `<option value="">${esc(emptyLabel)}</option>` + [...state.zones].sort(byZone)
+      .map((z) => `<option value="${esc(z.id)}"${z.id === selected ? ' selected' : ''}>${esc(z.code)} — ${esc(z.nom)}</option>`).join('');
+  }
+  const catOptions = (selected) => CATEGORIES.map((c) => `<option${c === selected ? ' selected' : ''}>${esc(c)}</option>`).join('');
+
+  function findMatch(nom) {
+    const n = norm(nom);
+    if (!n) return null;
+    return state.items.find((it) => norm(it.nom) === n) || null;
+  }
+
+  function viewScanner() {
+    const s = state.scan;
+    const head = `
+      <div class="section-head">
+        <div><h2>Scanner</h2><p class="lead">Une photo par rangement : un tiroir ouvert, une étagère, le contenu d'une caisse posé à plat. Plus les objets sont séparés et éclairés, plus le comptage est juste.</p></div>
+      </div>`;
+    if (!hasKey()) {
+      return head + `<div class="empty"><h3>Une clé API pour démarrer</h3>
+        <p>La reconnaissance par photo utilise Claude avec votre propre clé API Anthropic (quelques centimes par photo). Ajoutez-la une fois dans les réglages. En attendant, le catalogue et l'ajout à la main fonctionnent.</p>
+        <div class="toolbar"><button class="btn btn--main" data-act="settings">Ajouter ma clé API</button><button class="btn" data-act="catalogue">Catalogue</button></div></div>`;
+    }
+    if (!s.url) {
+      return head + `
+        <label class="drop" id="drop">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/></svg>
+          <strong>Prendre ou choisir une photo</strong>
+          <p>Sur téléphone, l'appareil photo s'ouvre. Sur ordinateur, choisissez une image ou glissez-la ici.</p>
+          <span class="btn btn--main file-btn">Choisir une photo<input id="scan-file" type="file" accept="image/*"></span>
+        </label>`;
+    }
+    let right = '';
+    if (s.busy) {
+      right = `<div class="status"><div class="spinner"></div><span>Claude examine la photo… (20 à 60 s)</span><button class="btn btn--sm btn--ghost" data-act="scan-stop">Arrêter</button></div>`;
+    } else if (s.results) {
+      const kept = s.results.filter((r) => r.keep).length;
+      right = `
+        ${s.remarque ? `<p class="note">${esc(s.remarque)}</p>` : ''}
+        <div class="found">
+          ${s.results.map((r, i) => foundRow(r, i)).join('') || '<p class="note">Aucun article reconnu sur cette photo. Essayez plus près, avec plus de lumière.</p>'}
+        </div>
+        <div class="row">
+          <button class="btn btn--main" data-act="scan-save" ${kept ? '' : 'disabled'}>Ajouter ${kept} article${kept > 1 ? 's' : ''} à l'inventaire</button>
+          <button class="btn btn--ghost" data-act="scan-reset">Nouvelle photo</button>
+        </div>`;
+    } else {
+      right = `
+        <label class="field"><span>Photo prise dans la zone</span><select id="scan-zone" data-bind="scan-zone">${zoneOptions(s.zoneId, 'Je ne sais pas / à ranger')}</select></label>
+        ${s.error ? `<p class="error">${esc(s.error)}</p>` : ''}
+        <div class="row">
+          <button class="btn btn--main" data-act="scan-run">Reconnaître les articles</button>
+          <button class="btn btn--ghost" data-act="scan-reset">Changer de photo</button>
+        </div>
+        <p class="note">La photo est envoyée à Claude avec votre clé API pour l'analyse, puis gardée en vignette sur votre iPhone.</p>`;
+    }
+    return head + `
+      <div class="scan-grid">
+        <div class="scan-photo"><img src="${esc(s.url)}" alt="Photo à analyser"></div>
+        <div style="display:grid;gap:12px;min-width:0">${right}</div>
+      </div>`;
+  }
+
+  function foundRow(r, i) {
+    const match = findMatch(r.nom);
+    const mergeSel = match ? `
+      <select data-bind="found-merge" data-i="${i}" aria-label="Action">
+        <option value="merge"${r.merge ? ' selected' : ''}>Ajouter au stock existant (${esc(fmtQty(match.quantite))} → ${esc(fmtQty(num(match.quantite) + num(r.quantite)))})</option>
+        <option value="new"${!r.merge ? ' selected' : ''}>Créer un nouvel article</option>
+      </select>` : '<span>Nouvel article</span>';
+    return `
+      <div class="found-row${r.keep ? '' : ' is-off'}">
+        <input type="checkbox" data-bind="found-keep" data-i="${i}" ${r.keep ? 'checked' : ''} aria-label="Garder ${esc(r.nom)}">
+        <div class="found-fields">
+          <label class="field"><span>Article</span><input id="f-nom-${i}" data-bind="found-nom" data-i="${i}" value="${esc(r.nom)}"></label>
+          <label class="field"><span>Qté</span><input id="f-q-${i}" data-bind="found-q" data-i="${i}" inputmode="decimal" value="${esc(fmtQty(r.quantite))}"></label>
+          <label class="field"><span>Catégorie</span><select data-bind="found-cat" data-i="${i}">${catOptions(r.categorie)}</select></label>
+          <div class="found-extra">
+            ${mergeSel}
+            ${r.unite && r.unite !== 'pièce' ? `<span>unité : ${esc(r.unite)}</span>` : ''}
+            ${r.marque ? `<span>marque : ${esc(r.marque)}</span>` : ''}
+            ${r.etat && r.etat !== 'bon' ? `<span class="pill pill--fix">${esc(r.etat)}</span>` : ''}
+            <span class="conf" title="Confiance de la reconnaissance">${Math.round(num(r.confiance, 0.5) * 100)} %</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function scanPrompt() {
+    return `Tu fais l'inventaire de l'atelier d'un bricoleur à partir de la photo jointe.
+Identifie chaque article distinct visible : outils, électroportatif, quincaillerie, consommables, matériaux, équipements de protection.
+Règles :
+- Regroupe les exemplaires identiques en une seule ligne et compte-les. Pour du vrac (vis, clous, chevilles), estime le nombre ou compte les boîtes/sachets et indique l'unité.
+- Nom court et précis en français, comme sur une étiquette : type + taille/caractéristique lisible (ex. "Tournevis plat 5,5 mm", "Clé plate 13 mm", "Vis bois 4 × 40 mm").
+- Ne liste pas les meubles de rangement eux-mêmes (étagère, établi), ni les objets flous que tu ne peux pas identifier.
+- Bobines de filament pour imprimante 3D : categorie "Impression 3D", unite "bobine", nom du type "Filament PLA noir 1,75 mm — 1 kg" (matière, couleur, diamètre, poids si lisibles sur l'étiquette) ; une ligne par matière+couleur.
+- categorie : exactement une valeur parmi ${JSON.stringify(CATEGORIES)}.
+- unite : ${UNITES.map((u) => '"' + u + '"').join(', ')}.
+- etat : "bon", "usé" ou "à réparer" (seulement si c'est visible, sinon "bon").
+- confiance : de 0 à 1.
+Réponds uniquement avec ce JSON :
+{"articles":[{"nom":"Marteau de charpentier","categorie":"Outillage à main","quantite":1,"unite":"pièce","marque":"","etat":"bon","consommable":false,"confiance":0.9},{"nom":"Filament PETG bleu 1,75 mm — 1 kg","categorie":"Impression 3D","quantite":2,"unite":"bobine","marque":"","etat":"bon","consommable":true,"confiance":0.8}],"remarque":"une phrase utile sur la photo (ex. zone floue, objets cachés), ou chaîne vide"}`;
+  }
+
+  async function runScan() {
+    const s = state.scan;
+    if (!s.file) return;
+    scanCtl = new AbortController();
+    setScan({ busy: true, error: '' });
+    try {
+      const { img } = await loadImage(s.file);
+      const blob = await toJpegBlob(img);
+      const out = await askClaude(scanPrompt(), { schema: SCAN_SCHEMA(), image: blob, signal: scanCtl.signal });
+      const arr = Array.isArray(out && out.articles) ? out.articles : [];
+      const results = arr.filter((a) => a && a.nom).slice(0, 60).map((a) => ({
+        nom: String(a.nom).slice(0, 120),
+        categorie: CATEGORIES.includes(a.categorie) ? a.categorie : 'Autre',
+        quantite: Math.max(0, num(a.quantite, 1)),
+        unite: String(a.unite || 'pièce').slice(0, 20),
+        marque: String(a.marque || '').slice(0, 60),
+        etat: ETATS.includes(a.etat) ? a.etat : 'bon',
+        consommable: !!a.consommable,
+        confiance: Math.min(1, Math.max(0, num(a.confiance, 0.5))),
+        keep: num(a.confiance, 0.5) >= 0.35,
+        merge: !!findMatch(a.nom)
+      }));
+      setScan({ busy: false, results, remarque: String((out && out.remarque) || '').slice(0, 300) });
+    } catch (e) {
+      if (e && e.code === 'cancelled') { setScan({ busy: false }); return; }
+      console.error(e);
+      const msg = aiMessage(e, 'cette photo');
+      setScan({ busy: false, error: msg });
+    }
+  }
+
+  async function saveScan() {
+    const s = state.scan;
+    const kept = s.results.filter((r) => r.keep && norm(r.nom));
+    if (!kept.length) return;
+    setScan({ busy: true });
+    let photoId = null;
+    try {
+      const { img, url } = await loadImage(s.file);
+      photoId = await store.addPhoto(toThumb(img));
+      URL.revokeObjectURL(url);
+    } catch (e) { console.error(e); }
+    let added = 0, merged = 0, failed = 0;
+    for (const r of kept) {
+      const match = r.merge ? findMatch(r.nom) : null;
+      try {
+        if (match) {
+          await store.update('items', match.id, { quantite: num(match.quantite) + num(r.quantite), updatedAt: now(), ...(match.photoId ? {} : photoId ? { photoId } : {}) });
+          merged++;
+        } else {
+          await store.add('items', {
+            nom: r.nom.trim(), categorie: r.categorie, quantite: num(r.quantite), unite: r.unite, seuil: 0,
+            zoneId: s.zoneId || null, emplacement: '', marque: r.marque, etat: r.etat, notes: '',
+            photoId, createdAt: now(), updatedAt: now()
+          });
+          added++;
+        }
+      } catch (e) { console.error(e); failed++; }
+    }
+    if (s.url) URL.revokeObjectURL(s.url);
+    state = { ...state, scan: { file: null, url: null, zoneId: s.zoneId, busy: false, error: '', results: null, remarque: '' }, tab: 'inventaire' };
+    render();
+    toast(failed ? `${added + merged} enregistrés, ${failed} en échec.` : `${added} ajouté${added > 1 ? 's' : ''}, ${merged} mis à jour.`);
+  }
+
+  function pickScanFile(file) {
+    if (!file) return;
+    if (!/^image\//.test(file.type) && file.type) { toast('Choisissez un fichier image.'); return; }
+    if (state.scan.url) URL.revokeObjectURL(state.scan.url);
+    setScan({ file, url: URL.createObjectURL(file), results: null, error: '', remarque: '' });
+  }
+
+  // ---------- Rangement ----------
+  function viewRangement() {
+    const p = state.plan;
+    const zones = [...state.zones].sort(byZone);
+    const loose = state.items.filter((it) => !zoneById(it.zoneId)).sort(byName);
+    const zoneLi = (it) => `<li draggable="true" data-drag="${esc(it.id)}"><button data-act="edit" data-id="${esc(it.id)}">${esc(it.nom)}${it.emplacement ? ` <small style="color:var(--muted)">· ${esc(it.emplacement)}</small>` : ''}</button><span class="li-act"><span>× ${esc(fmtQty(it.quantite))}</span><button class="icon-btn" data-act="move" data-id="${esc(it.id)}" title="Déplacer" aria-label="Déplacer ${esc(it.nom)}">${ICON_MOVE}</button></span></li>`;
+    const zoneCard = (z) => {
+      const its = state.items.filter((it) => it.zoneId === z.id).sort(byName);
+      return `
+        <section class="zone" data-zone="${esc(z.id)}">
+          <div class="zone__head">
+            <span class="zone__code">${esc(z.code)}</span>
+            <div style="min-width:0"><div class="zone__name">${esc(z.nom)}</div><div class="zone__type">${esc(z.type || '')}${z.description ? ' · ' + esc(z.description) : ''}</div></div>
+            <div class="row" style="flex-wrap:nowrap"><span class="zone__count">${its.length}</span><button class="btn btn--sm btn--ghost" data-act="zone-edit" data-id="${esc(z.id)}" aria-label="Modifier la zone ${esc(z.code)}">Modifier</button></div>
+          </div>
+          ${its.length ? `<ul>${its.map(zoneLi).join('')}</ul>` : '<p class="zone__empty">Rien ici pour l\'instant. Glissez un article ici, ou utilisez « Déplacer ».</p>'}
+        </section>`;
+    };
+    const plan = state.items.length ? `
+      <div class="panel">
+        <h3>Plan de rangement proposé par Claude</h3>
+        <p class="note">Claude répartit vos ${state.items.length} articles dans ${zones.length ? 'vos zones' : 'des zones qu\'il propose'} : outils du quotidien près de l'établi, lourd en bas, vrac en bacs étiquetés, produits dangereux fermés.</p>
+        <label class="field"><span>Décrivez votre atelier (facultatif)</span>
+          <textarea id="plan-notes" data-bind="plan-notes" placeholder="Garage 3 × 5 m, établi sous la fenêtre, un mur libre de 3 m, enfants à la maison…">${esc(p.notes)}</textarea></label>
+        ${p.error ? `<p class="error">${esc(p.error)}</p>` : ''}
+        ${p.busy ? '<div class="status"><div class="spinner"></div><span>Claude organise votre atelier… (20 à 60 s)</span><button class="btn btn--sm btn--ghost" data-act="plan-stop">Arrêter</button></div>'
+          : `<div class="row"><button class="btn btn--main" data-act="plan-run">${p.proposal ? 'Proposer un autre plan' : 'Proposer un plan'}</button></div>`}
+        ${p.proposal ? planPreview(p.proposal) : ''}
+      </div>` : '';
+    const presets = `
+      <div class="panel">
+        <h3>Partir d'un modèle</h3>
+        <p class="note">Crée les zones d'un atelier type. Les codes (E, P, B…) servent d'étiquettes à coller sur vos rangements. Les zones déjà présentes sont conservées.</p>
+        <div class="presets">
+          ${PRESETS.map((pr, i) => `<button class="preset" data-act="preset" data-i="${i}"><b>${esc(pr.nom)}</b><small>${esc(pr.resume)}</small><small>${pr.zones.map((z) => esc(z.code)).join(' · ')}</small></button>`).join('')}
+        </div>
+      </div>`;
+    return `
+      <div class="section-head">
+        <div><h2>Rangement</h2><p class="lead">Chaque zone a un code court à écrire sur une étiquette. Pour déplacer un article : glissez-le d'une zone à l'autre, ou touchez la flèche « Déplacer ».</p></div>
+        <button class="btn" data-act="zone-new">+ Zone</button>
+      </div>
+      ${zones.length || loose.length ? `<div class="zones">
+        ${zones.map(zoneCard).join('')}
+        ${loose.length ? `<section class="zone zone--loose" data-zone=""><div class="zone__head"><span class="zone__code">?</span><div><div class="zone__name">À ranger</div><div class="zone__type">Articles sans zone · glissez-les dans une zone</div></div><span class="zone__count">${loose.length}</span></div>
+          <ul>${loose.map(zoneLi).join('')}</ul></section>` : ''}
+      </div>` : ''}
+      ${plan}
+      ${presets}`;
+  }
+
+  function planPreview(pr) {
+    const zoneName = (code) => {
+      const pz = pr.zones.find((z) => z.code === code);
+      const ez = state.zones.find((z) => norm(z.code) === norm(code));
+      return (pz && pz.nom) || (ez && ez.nom) || '';
+    };
+    const rows = pr.affectations.map((a) => {
+      const it = state.items.find((x) => x.id === a.id);
+      return it ? `<tr><td>${esc(it.nom)}</td><td><span class="tag">${esc(a.zone)}</span> ${esc(zoneName(a.zone))}</td><td>${esc(a.emplacement)}</td></tr>` : '';
+    }).join('');
+    const newZones = pr.zones.filter((z) => !state.zones.some((e) => norm(e.code) === norm(z.code)));
+    return `
+      ${newZones.length ? `<p class="note"><strong>${newZones.length} zone${newZones.length > 1 ? 's' : ''} à créer :</strong> ${newZones.map((z) => `${esc(z.code)} (${esc(z.nom)})`).join(', ')}</p>` : ''}
+      <div class="scroll-x"><table class="plan-table"><thead><tr><th>Article</th><th>Zone</th><th>Emplacement</th></tr></thead><tbody>${rows}</tbody></table></div>
+      ${pr.conseils.length ? `<ul class="tips">${pr.conseils.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}
+      <div class="row">
+        <button class="btn btn--main" data-act="plan-apply" ${state.plan.applying ? 'disabled' : ''}>${state.plan.applying ? 'Application…' : 'Appliquer ce plan'}</button>
+        <button class="btn btn--ghost" data-act="plan-discard">Ignorer</button>
+      </div>`;
+  }
+
+  function planPrompt() {
+    const items = state.items.slice(0, 400).map((it) => `${it.id}|${it.nom}|${it.categorie || 'Autre'}|${fmtQty(it.quantite)} ${it.unite || 'pièce'}`).join('\n');
+    const zones = [...state.zones].sort(byZone).map((z) => `${z.code}|${z.nom}|${z.type || ''}|${z.description || ''}`).join('\n');
+    return `Tu es un organisateur d'atelier de bricolage. Propose un plan de rangement pratique.
+Principes : outils utilisés souvent à portée de main près de l'établi ; objets lourds en bas ; petites pièces et vrac dans des bacs étiquetés ; batteries et chargeurs ensemble ; produits inflammables ou toxiques dans un rangement fermé, en hauteur si des enfants passent ; regrouper par usage (perçage, vissage, mesure, peinture…).
+${zones ? `Zones existantes (code|nom|type|description) — utilise-les en priorité, n'en crée que si c'est vraiment utile :\n${zones}` : 'Aucune zone n\'existe : propose 4 à 8 zones avec un code court (1 à 3 caractères, ex. E, P, B, S1).'}
+Types de zone possibles : ${ZONE_TYPES.join(', ')}.
+Description de l'atelier par l'utilisateur : ${state.plan.notes.trim() || '(non précisée)'}
+Articles (id|nom|catégorie|quantité) :
+${items}
+Réponds uniquement avec ce JSON (chaque article reçoit exactement une affectation, "id" recopié tel quel) :
+{"zones":[{"code":"P","nom":"Panneau perforé au-dessus de l'établi","type":"Mural","description":"Outillage à main"}],"affectations":[{"id":"...","zone":"P","emplacement":"rangée du haut, à gauche"}],"conseils":["3 à 5 conseils courts et concrets"]}
+Dans "zones", liste toutes les zones utilisées (existantes et nouvelles).`;
+  }
+
+  async function runPlan() {
+    if (!hasKey()) { setPlan({ error: aiMessage({ code: 'no_key' }) }); return; }
+    planCtl = new AbortController();
+    setPlan({ busy: true, error: '', proposal: null });
+    try {
+      const out = await askClaude(planPrompt(), { schema: PLAN_SCHEMA(), signal: planCtl.signal });
+      const zones = (Array.isArray(out && out.zones) ? out.zones : [])
+        .filter((z) => z && z.code).slice(0, 30)
+        .map((z) => ({ code: String(z.code).slice(0, 6).toUpperCase(), nom: String(z.nom || z.code).slice(0, 80), type: ZONE_TYPES.includes(z.type) ? z.type : 'Étagère', description: String(z.description || '').slice(0, 120) }));
+      const ids = new Set(state.items.map((it) => it.id));
+      const affectations = (Array.isArray(out && out.affectations) ? out.affectations : [])
+        .filter((a) => a && ids.has(String(a.id)) && a.zone)
+        .map((a) => ({ id: String(a.id), zone: String(a.zone).slice(0, 6).toUpperCase(), emplacement: String(a.emplacement || '').slice(0, 80) }));
+      const conseils = (Array.isArray(out && out.conseils) ? out.conseils : []).map(String).slice(0, 6);
+      if (!affectations.length) { setPlan({ busy: false, error: 'Le plan reçu est vide. Relancez la proposition.' }); return; }
+      setPlan({ busy: false, proposal: { zones, affectations, conseils } });
+    } catch (e) {
+      if (e && e.code === 'cancelled') { setPlan({ busy: false }); return; }
+      console.error(e);
+      const msg = aiMessage(e, 'cette demande');
+      setPlan({ busy: false, error: msg });
+    }
+  }
+
+  async function applyPlan() {
+    const pr = state.plan.proposal;
+    if (!pr) return;
+    setPlan({ applying: true });
+    try {
+      const codeToId = new Map(state.zones.map((z) => [norm(z.code), z.id]));
+      let ordre = state.zones.length;
+      const used = new Set(pr.affectations.map((a) => norm(a.zone)));
+      for (const z of pr.zones) {
+        if (codeToId.has(norm(z.code)) || !used.has(norm(z.code))) continue;
+        const id = await store.add('zones', { ...z, ordre: ordre++, createdAt: now() });
+        codeToId.set(norm(z.code), id);
+      }
+      let n = 0;
+      for (const a of pr.affectations) {
+        const zid = codeToId.get(norm(a.zone));
+        if (!zid) continue;
+        await store.update('items', a.id, { zoneId: zid, emplacement: a.emplacement, updatedAt: now() });
+        n++;
+      }
+      state = { ...state, plan: { ...state.plan, applying: false, proposal: null } };
+      render();
+      toast(`Plan appliqué : ${n} article${n > 1 ? 's' : ''} rangé${n > 1 ? 's' : ''}. Bel atelier !`, 'win');
+    } catch (e) {
+      console.error(e);
+      setPlan({ applying: false });
+      toast(dbMessage(e));
+    }
+  }
+
+  async function applyPreset(i) {
+    const pr = PRESETS[i];
+    if (!pr) return;
+    const existing = new Set(state.zones.map((z) => norm(z.code)));
+    let ordre = state.zones.length, n = 0;
+    for (const z of pr.zones) {
+      if (existing.has(norm(z.code))) continue;
+      const ok = await safe(() => store.add('zones', { ...z, ordre: ordre++, createdAt: now() }));
+      if (ok === undefined) return;
+      n++;
+    }
+    toast(n ? `${n} zone${n > 1 ? 's' : ''} créée${n > 1 ? 's' : ''}. Collez les codes sur vos rangements.` : 'Ces zones existent déjà.');
+  }
+
+  // ---------- À racheter ----------
+  function viewRacheter() {
+    const low = state.items.filter(isLow).sort(byName);
+    const fix = state.items.filter((it) => it.etat === 'à réparer').sort(byName);
+    const block = (title, list, kind) => list.length ? `
+      <div class="panel">
+        <h3>${title}</h3>
+        <div class="shop">${list.map((it) => `
+          <div class="shop-row">
+            <div style="min-width:0"><b>${esc(it.nom)}</b><div class="item__meta">${zoneTag(it)}${it.notes ? `<span>${esc(it.notes)}</span>` : ''}</div></div>
+            ${kind === 'low' ? `<span class="mono">${esc(fmtQty(it.quantite))} / seuil ${esc(fmtQty(it.seuil))}</span>` : '<span></span>'}
+            <button class="btn btn--sm" data-act="edit" data-id="${esc(it.id)}">Ouvrir</button>
+          </div>`).join('')}</div>
+      </div>` : '';
+    return `
+      <div class="section-head">
+        <div><h2>À racheter</h2><p class="lead">Les articles sous leur seuil d'alerte et ceux marqués « à réparer ». Réglez le seuil dans la fiche d'un article (ex. 1 boîte de vis).</p></div>
+        ${low.length ? '<button class="btn btn--main" data-act="copy-list">Copier la liste de courses</button>' : ''}
+      </div>
+      <div class="hazard" aria-hidden="true"></div>
+      ${low.length || fix.length ? block('Stock bas', low, 'low') + block('À réparer ou remplacer', fix, 'fix')
+        : '<div class="empty"><h3>Rien à racheter</h3><p>Donnez un seuil d\'alerte à vos consommables (vis, abrasifs, forets, colle) : ils apparaîtront ici quand le stock descend.</p></div>'}`;
+  }
+
+  function shoppingText() {
+    return 'Liste bricolage\n' + state.items.filter(isLow).sort(byName)
+      .map((it) => `- ${it.nom} (reste ${fmtQty(it.quantite)} ${it.unite || 'pièce'})${it.marque ? ' — ' + it.marque : ''}`).join('\n');
+  }
+
+  // ---------- Fiche article / zone ----------
+  function openItem(id) {
+    const it = id ? state.items.find((x) => x.id === id) : null;
+    if (id && !it) return;
+    const v = it || { nom: '', categorie: 'Outillage à main', quantite: 1, unite: 'pièce', seuil: 0, zoneId: '', emplacement: '', marque: '', etat: 'bon', notes: '', photoId: null };
+    const dlg = $('#dlg');
+    dlg.innerHTML = `
+      <form class="dlg" id="item-form" method="dialog">
+        <h2>${it ? 'Fiche article' : 'Nouvel article'}</h2>
+        <div class="dlg__photo">
+          <div class="thumb" id="i-thumb" ${v.photoId ? `data-photo="${esc(v.photoId)}"` : ''}>${v.photoId ? 'photo' : 'aucune'}</div>
+          <span class="btn file-btn">${v.photoId ? 'Changer la photo' : 'Ajouter une photo'}<input id="i-photo" type="file" accept="image/*"></span>
+        </div>
+        <label class="field"><span>Nom</span><input id="i-nom" required maxlength="120" value="${esc(v.nom)}" placeholder="Scie cloche Ø 68 mm"></label>
+        <div class="grid3">
+          <label class="field"><span>Quantité</span><input id="i-q" inputmode="decimal" value="${esc(fmtQty(v.quantite))}"></label>
+          <label class="field"><span>Unité</span><input id="i-unite" list="units" value="${esc(v.unite || 'pièce')}"></label>
+          <label class="field"><span>Alerte si ≤</span><input id="i-seuil" inputmode="decimal" value="${esc(fmtQty(v.seuil || 0))}" title="0 = pas d'alerte"></label>
+        </div>
+        <datalist id="units">${UNITES.map((u) => `<option>${u}</option>`).join('')}</datalist>
+        <div class="grid2">
+          <label class="field"><span>Catégorie</span><select id="i-cat">${catOptions(v.categorie || 'Autre')}</select></label>
+          <label class="field"><span>État</span><select id="i-etat">${ETATS.map((e) => `<option${e === v.etat ? ' selected' : ''}>${e}</option>`).join('')}</select></label>
+        </div>
+        <div class="grid2">
+          <label class="field"><span>Zone</span><select id="i-zone">${zoneOptions(v.zoneId || '')}</select></label>
+          <label class="field"><span>Emplacement précis</span><input id="i-empl" maxlength="80" value="${esc(v.emplacement)}" placeholder="Tiroir 2, bac B-04…"></label>
+        </div>
+        <label class="field"><span>Marque / référence</span><input id="i-marque" maxlength="60" value="${esc(v.marque)}"></label>
+        <label class="field"><span>Notes</span><textarea id="i-notes" maxlength="500" placeholder="Prêté à Paul, batterie 2 Ah…">${esc(v.notes)}</textarea></label>
+        <p class="error" id="i-err" hidden></p>
+        <div class="dlg__foot">
+          ${it ? '<button type="button" class="btn btn--danger" data-act="item-del">Supprimer</button>' : '<span></span>'}
+          <div class="row"><button type="button" class="btn btn--ghost" data-act="dlg-close">Annuler</button><button type="submit" class="btn btn--main">Enregistrer</button></div>
+        </div>
+      </form>`;
+    dlg.dataset.itemId = it ? it.id : '';
+    dlg.dataset.newPhoto = '';
+    dlg.showModal();
+    hydratePhotos();
+  }
+
+  async function submitItem() {
+    const dlg = $('#dlg');
+    const id = dlg.dataset.itemId;
+    const nom = $('#i-nom').value.trim();
+    const err = $('#i-err');
+    if (!nom) { err.textContent = 'Donnez un nom à l\'article.'; err.hidden = false; return; }
+    const q = num($('#i-q').value, NaN);
+    if (!Number.isFinite(q) || q < 0) { err.textContent = 'La quantité doit être un nombre positif.'; err.hidden = false; return; }
+    const data = {
+      nom, quantite: q, unite: $('#i-unite').value.trim() || 'pièce', seuil: Math.max(0, num($('#i-seuil').value, 0)),
+      categorie: $('#i-cat').value, etat: $('#i-etat').value, zoneId: $('#i-zone').value || null,
+      emplacement: $('#i-empl').value.trim(), marque: $('#i-marque').value.trim(), notes: $('#i-notes').value.trim(), updatedAt: now()
+    };
+    const old = id ? state.items.find((x) => x.id === id) : null;
+    const newPhoto = dlg.dataset.newPhoto;
+    if (newPhoto) {
+      const pid = await safe(() => store.addPhoto(newPhoto));
+      if (pid) data.photoId = pid;
+    }
+    dlg.close();
+    if (old) {
+      const ok = await safe(() => store.update('items', id, data), 'Article enregistré.');
+      if (ok !== undefined && data.photoId && old.photoId) safe(() => store.removePhotoIfOrphan(old.photoId, id));
+    } else {
+      await safe(() => store.add('items', { ...data, photoId: data.photoId || null, createdAt: now() }), 'Article ajouté.');
+    }
+  }
+
+  let catQ = '', catFam = 'all';
+  const CAT_FAMILIES = [...new Set(CATALOGUE.map((c) => c.cat))];
+  function openCatalogue() {
+    const dlg = $('#dlg');
+    dlg.classList.add('dlg-wide');
+    dlg.innerHTML = '<div class="dlg" id="cat-dlg"></div>';
+    dlg.dataset.moveId = ''; dlg.dataset.itemId = ''; dlg.dataset.zoneId = '';
+    renderCatalogue();
+    dlg.showModal();
+    const q = $('#cat-q'); if (q) q.focus();
+  }
+  function renderCatalogue() {
+    const box = $('#cat-dlg'); if (!box) return;
+    const q = norm(catQ);
+    const list = CATALOGUE.filter((c) => (catFam === 'all' || c.cat === catFam) && (!q || norm(c.nom + ' ' + c.cat).includes(q)));
+    box.innerHTML = `
+      <div class="section-head"><h2>Catalogue</h2><button type="button" class="btn btn--sm btn--ghost" data-act="dlg-close">Fermer</button></div>
+      <p class="note">Les classiques de l'atelier, prêts à ajouter. Un clic ajoute 1 ; si l'article existe déjà, sa quantité augmente. Le seuil d'alerte est pré-rempli.</p>
+      <label class="search">${searchIcon}<input id="cat-q" type="search" placeholder="wago, M6, cheville, foret…" value="${esc(catQ)}" autocomplete="off" aria-label="Chercher dans le catalogue"></label>
+      <div class="chips"><button type="button" class="chip" data-fam="all" aria-pressed="${catFam === 'all'}">Tout</button>${CAT_FAMILIES.map((f) => `<button type="button" class="chip" data-fam="${esc(f)}" aria-pressed="${catFam === f}" style="--cat:${catColor(f)}"><span class="dot"></span>${esc(f)}</button>`).join('')}</div>
+      <div class="cat-grid">${list.map((c, i) => {
+        const ex = findMatch(c.nom);
+        return `<button type="button" class="cat-tile" data-cat-add="${CATALOGUE.indexOf(c)}" style="--cat:${catColor(c.cat)}"><span class="thumb">${picSvg(c.pic)}</span><span class="cat-tile__name">${esc(c.nom)}</span><span class="cat-tile__meta">${ex ? `en stock : ${esc(fmtQty(ex.quantite))} ${esc(ex.unite || '')}` : esc(c.unite)}</span></button>`;
+      }).join('') || '<p class="note">Rien pour cette recherche. Ajoutez-le à la main avec « + Article ».</p>'}</div>`;
+  }
+  async function addFromCatalogue(i) {
+    const c = CATALOGUE[i]; if (!c) return;
+    const ex = findMatch(c.nom);
+    if (ex) {
+      await safe(() => store.update('items', ex.id, { quantite: num(ex.quantite) + 1, updatedAt: now() }), `${c.nom} : ${fmtQty(num(ex.quantite) + 1)} ${ex.unite || ''}`);
+    } else {
+      await safe(() => store.add('items', { nom: c.nom, categorie: c.cat, quantite: 1, unite: c.unite, seuil: c.seuil, zoneId: null, emplacement: '', marque: '', etat: 'bon', notes: '', pic: c.pic, photoId: null, createdAt: now(), updatedAt: now() }), `${c.nom} ajouté.`);
+    }
+    renderCatalogue();
+  }
+
+  function openSettings() {
+    const key = lsGet(LS.key);
+    const last = lsGet(LS.lastBackup);
+    const dlg = $('#dlg');
+    dlg.innerHTML = `
+      <form class="dlg" id="settings-form" method="dialog">
+        <div class="section-head"><h2>Réglages</h2><button type="button" class="btn btn--sm btn--ghost" data-act="dlg-close">Fermer</button></div>
+        <label class="field"><span>Votre prénom (facultatif)</span><input id="s-name" maxlength="40" value="${esc(lsGet(LS.name))}" placeholder="Paul"></label>
+        <div class="settings-block">
+          <h3>Reconnaissance photo</h3>
+          <p class="note">Statut : ${key ? `<span class="key-ok">clé enregistrée (…${esc(key.slice(-4))})</span>` : '<span class="key-missing">aucune clé</span>'}</p>
+          <label class="field"><span>Clé API Anthropic</span><input id="s-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${key ? 'Laisser vide pour garder la clé actuelle' : 'sk-ant-…'}"></label>
+          <p class="note">Créez une clé sur <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> (Settings → API Keys) et fixez une limite de dépense mensuelle. La clé reste sur cet iPhone et part uniquement vers api.anthropic.com. Coût indicatif : quelques centimes par photo analysée.</p>
+          ${key ? '<div class="row"><button type="button" class="btn btn--sm btn--danger" data-act="key-del">Retirer la clé</button></div>' : ''}
+        </div>
+        <div class="settings-block">
+          <h3>Sauvegarde</h3>
+          <p class="note">Vos données sont sur cet iPhone uniquement. Faites une sauvegarde de temps en temps (dans Fichiers ou iCloud Drive) : elle sert aussi à passer sur un autre appareil. ${last ? `Dernière sauvegarde : ${esc(new Date(last).toLocaleDateString('fr-FR'))}.` : 'Aucune sauvegarde pour l\'instant.'}</p>
+          <div class="row">
+            <button type="button" class="btn" data-act="backup">Sauvegarder</button>
+            <span class="btn file-btn">Restaurer…<input id="s-restore" type="file" accept="application/json,.json"></span>
+          </div>
+        </div>
+        <p class="note mono">Établi · ${state.items.length} articles · ${state.zones.length} zones</p>
+        <div class="dlg__foot"><span></span><button type="submit" class="btn btn--main">Enregistrer</button></div>
+      </form>`;
+    dlg.showModal();
+  }
+
+  function submitSettings() {
+    const name = $('#s-name').value.trim();
+    const key = $('#s-key').value.trim();
+    if (key && !/^sk-ant-[\w-]{10,}$/.test(key)) { toast('Cette clé ne ressemble pas à une clé Anthropic (elle commence par sk-ant-).'); return; }
+    lsSet(LS.name, name);
+    if (key) lsSet(LS.key, key);
+    $('#dlg').close();
+    renderWho();
+    render();
+    toast(key ? 'Clé enregistrée. Le scanner est prêt.' : 'Réglages enregistrés.');
+  }
+
+  async function backup() {
+    const photos = await idb.all('photos');
+    const data = { app: 'etabli', version: 1, date: now(), items: state.items, zones: state.zones, photos };
+    const d = new Date().toISOString().slice(0, 10);
+    const ok = await shareFile(`etabli-sauvegarde-${d}.json`, new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    if (ok) { lsSet(LS.lastBackup, now()); toast('Sauvegarde prête.'); }
+  }
+
+  async function restore(file) {
+    let data;
+    try { data = JSON.parse(await file.text()); } catch (_) { toast('Ce fichier n\'est pas une sauvegarde Établi.'); return; }
+    const valid = data && data.app === 'etabli' && Array.isArray(data.items) && Array.isArray(data.zones) && Array.isArray(data.photos)
+      && [...data.items, ...data.zones, ...data.photos].every((r) => r && typeof r.id === 'string');
+    if (!valid) { toast('Ce fichier n\'est pas une sauvegarde Établi.'); return; }
+    const box = $('#settings-form .settings-block:last-of-type') || $('#settings-form');
+    const warn = document.createElement('div');
+    warn.className = 'panel';
+    warn.innerHTML = `<p class="note"><strong>Remplacer tout l'inventaire actuel</strong> (${state.items.length} articles) par la sauvegarde du ${esc(new Date(data.date).toLocaleDateString('fr-FR'))} (${data.items.length} articles) ?</p>
+      <div class="row"><button type="button" class="btn btn--danger is-armed" id="s-restore-go">Remplacer</button><button type="button" class="btn btn--ghost" id="s-restore-no">Annuler</button></div>`;
+    box.appendChild(warn);
+    $('#s-restore-no').onclick = () => warn.remove();
+    $('#s-restore-go').onclick = async () => {
+      try {
+        await idb.replaceAll('items', data.items);
+        await idb.replaceAll('zones', data.zones);
+        await idb.replaceAll('photos', data.photos);
+        photoCache.clear();
+        $('#dlg').close();
+        setState({ items: data.items, zones: data.zones });
+        toast(`Sauvegarde restaurée : ${data.items.length} articles.`);
+      } catch (e) { console.error(e); toast(dbMessage(e)); }
+    };
+  }
+
+  function renderWho() {
+    const name = lsGet(LS.name);
+    $('#who').textContent = name ? 'Atelier de ' + name : '';
+  }
+
+  function openMove(id) {
+    const it = state.items.find((x) => x.id === id);
+    if (!it) return;
+    const z = zoneById(it.zoneId);
+    const dlg = $('#dlg');
+    dlg.innerHTML = `
+      <form class="dlg dlg--sm" id="move-form" method="dialog">
+        <h2>Déplacer</h2>
+        <p class="dlg__from"><strong>${esc(it.nom)}</strong> · actuellement ${z ? `<span class="tag">${esc(z.code)}</span> ${esc(z.nom)}` : 'non rangé'}${it.emplacement ? ` · ${esc(it.emplacement)}` : ''}</p>
+        <label class="field"><span>Nouvelle zone</span><select id="m-zone">${zoneOptions(it.zoneId || '')}</select></label>
+        <label class="field"><span>Emplacement précis</span><input id="m-empl" maxlength="80" value="${esc(it.emplacement)}" placeholder="Tiroir 2, bac B-04, crochet du haut…"></label>
+        <div class="dlg__foot"><span></span><div class="row"><button type="button" class="btn btn--ghost" data-act="dlg-close">Annuler</button><button type="submit" class="btn btn--main">Déplacer</button></div></div>
+      </form>`;
+    dlg.dataset.moveId = id;
+    dlg.showModal();
+    $('#m-zone').focus();
+  }
+
+  async function moveItem(id, zoneId, emplacement) {
+    const it = state.items.find((x) => x.id === id);
+    if (!it) return;
+    const z = zoneById(zoneId);
+    const ok = await safe(() => store.update('items', id, { zoneId: zoneId || null, emplacement: emplacement ?? it.emplacement, updatedAt: now() }));
+    if (ok === undefined) return;
+    const left = state.items.filter((x) => x.id !== id && !zoneById(x.zoneId)).length;
+    toast(z ? `${it.nom} → ${z.code}${left === 0 && !zoneById(it.zoneId) ? ' · Tout est rangé !' : ''}` : `${it.nom} remis « à ranger ».`, left === 0 && z ? 'win' : '');
+  }
+
+  function openZone(id) {
+    const z = id ? state.zones.find((x) => x.id === id) : null;
+    const v = z || { code: '', nom: '', type: 'Étagère', description: '' };
+    const dlg = $('#dlg');
+    const count = z ? state.items.filter((it) => it.zoneId === z.id).length : 0;
+    dlg.innerHTML = `
+      <form class="dlg" id="zone-form" method="dialog">
+        <h2>${z ? 'Zone ' + esc(z.code) : 'Nouvelle zone'}</h2>
+        <div class="grid3">
+          <label class="field"><span>Code</span><input id="z-code" required maxlength="6" value="${esc(v.code)}" placeholder="B"></label>
+          <label class="field" style="grid-column:span 2"><span>Nom</span><input id="z-nom" required maxlength="80" value="${esc(v.nom)}" placeholder="Mur de bacs à bec"></label>
+        </div>
+        <div class="grid2">
+          <label class="field"><span>Type</span><select id="z-type">${ZONE_TYPES.map((t) => `<option${t === v.type ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
+          <label class="field"><span>Contenu prévu</span><input id="z-desc" maxlength="120" value="${esc(v.description)}" placeholder="Vis, chevilles…"></label>
+        </div>
+        <p class="error" id="z-err" hidden></p>
+        <div class="dlg__foot">
+          ${z ? `<button type="button" class="btn btn--danger" data-act="zone-del">Supprimer${count ? ` (${count} article${count > 1 ? 's' : ''} → à ranger)` : ''}</button>` : '<span></span>'}
+          <div class="row"><button type="button" class="btn btn--ghost" data-act="dlg-close">Annuler</button><button type="submit" class="btn btn--main">Enregistrer</button></div>
+        </div>
+      </form>`;
+    dlg.dataset.zoneId = z ? z.id : '';
+    dlg.showModal();
+  }
+
+  async function submitZone() {
+    const dlg = $('#dlg');
+    const id = dlg.dataset.zoneId;
+    const code = $('#z-code').value.trim().toUpperCase();
+    const nom = $('#z-nom').value.trim();
+    const err = $('#z-err');
+    if (!code || !nom) { err.textContent = 'Le code et le nom sont obligatoires.'; err.hidden = false; return; }
+    if (state.zones.some((z) => z.id !== id && norm(z.code) === norm(code))) { err.textContent = `Le code ${code} est déjà utilisé.`; err.hidden = false; return; }
+    const data = { code, nom, type: $('#z-type').value, description: $('#z-desc').value.trim() };
+    dlg.close();
+    if (id) await safe(() => store.update('zones', id, data), 'Zone enregistrée.');
+    else await safe(() => store.add('zones', { ...data, ordre: state.zones.length, createdAt: now() }), `Zone ${code} créée.`);
+  }
+
+  // Suppression en deux temps (pas de confirm() dans l'artifact)
+  function armOrRun(btn, run) {
+    if (btn.classList.contains('is-armed')) { run(); return; }
+    btn.classList.add('is-armed');
+    btn.dataset.label = btn.textContent;
+    btn.textContent = 'Confirmer la suppression';
+    setTimeout(() => { if (btn.isConnected) { btn.classList.remove('is-armed'); btn.textContent = btn.dataset.label; } }, 4000);
+  }
+
+  // ---------- Quantité rapide ----------
+  async function bumpQty(id, delta) {
+    const it = state.items.find((x) => x.id === id);
+    if (!it) return;
+    const q = Math.max(0, num(it.quantite) + delta);
+    if (q === num(it.quantite)) return;
+    await safe(() => store.update('items', id, { quantite: q, updatedAt: now() }));
+    const out = document.querySelector(`.qty:has([data-id="${CSS.escape(id)}"]) output`);
+    if (out) { out.classList.remove('is-bump'); void out.offsetWidth; out.classList.add('is-bump'); }
+  }
+
+  // ---------- Export ----------
+  async function exportCsv() {
+    const cell = (v) => { const s = String(v ?? ''); return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+    const head = ['Article', 'Catégorie', 'Quantité', 'Unité', 'Seuil', 'Zone', 'Nom de zone', 'Emplacement', 'Marque', 'État', 'Notes'];
+    const rows = [...state.items].sort(byName).map((it) => {
+      const z = zoneById(it.zoneId);
+      return [it.nom, it.categorie, fmtQty(it.quantite), it.unite, fmtQty(it.seuil || 0), z ? z.code : '', z ? z.nom : '', it.emplacement, it.marque, it.etat, it.notes];
+    });
+    const csv = '﻿' + [head, ...rows].map((r) => r.map(cell).join(';')).join('\r\n');
+    await shareFile('inventaire-atelier.csv', new Blob([csv], { type: 'text/csv' }));
+  }
+
+  // Sur iPhone : feuille de partage (Enregistrer dans Fichiers, Mail…) ; ailleurs : téléchargement.
+  async function shareFile(filename, blob) {
+    const file = new File([blob], filename, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: filename }); return true; }
+      catch (e) { if (e && e.name === 'AbortError') return false; }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return true;
+  }
+
+  // ---------- Événements (délégués une seule fois sur document) ----------
+  document.addEventListener('click', async (ev) => {
+    const tile = ev.target.closest('[data-cat-add]');
+    if (tile) { tile.disabled = true; await addFromCatalogue(Number(tile.dataset.catAdd)); return; }
+    const fam = ev.target.closest('[data-fam]');
+    if (fam) { catFam = fam.dataset.fam; renderCatalogue(); return; }
+    const tab = ev.target.closest('.tab');
+    if (tab) { setState({ tab: tab.dataset.tab }); window.scrollTo(0, 0); return; }
+    const el = ev.target.closest('[data-act]');
+    if (!el) return;
+    const act = el.dataset.act, id = el.dataset.id;
+    switch (act) {
+      case 'goto': setState({ tab: el.dataset.tab }); window.scrollTo(0, 0); break;
+      case 'cat': setState({ cat: el.dataset.cat }); break;
+      case 'new': openItem(null); break;
+      case 'edit': openItem(id); break;
+      case 'move': openMove(id); break;
+      case 'catalogue': openCatalogue(); break;
+      case 'settings': openSettings(); break;
+      case 'key-del': lsSet(LS.key, ''); $('#dlg').close(); render(); toast('Clé retirée de cet iPhone.'); break;
+      case 'backup': backup(); break;
+      case 'install-hide': lsSet(LS.installHidden, '1'); $('#banner').hidden = true; break;
+      case 'inc': bumpQty(id, 1); break;
+      case 'dec': bumpQty(id, -1); break;
+      case 'csv': exportCsv(); break;
+      case 'dlg-close': $('#dlg').close(); $('#dlg').classList.remove('dlg-wide'); break;
+      case 'item-del': armOrRun(el, async () => {
+        const dlg = $('#dlg'); const iid = dlg.dataset.itemId; const it = state.items.find((x) => x.id === iid);
+        dlg.close();
+        const ok = await safe(() => store.remove('items', iid), 'Article supprimé.');
+        if (it && it.photoId && ok !== undefined) safe(() => store.removePhotoIfOrphan(it.photoId, iid));
+      }); break;
+      case 'zone-new': openZone(null); break;
+      case 'zone-edit': openZone(id); break;
+      case 'zone-del': armOrRun(el, async () => {
+        const dlg = $('#dlg'); const zid = dlg.dataset.zoneId;
+        dlg.close();
+        for (const it of state.items.filter((x) => x.zoneId === zid)) await safe(() => store.update('items', it.id, { zoneId: null }));
+        await safe(() => store.remove('zones', zid), 'Zone supprimée.');
+      }); break;
+      case 'preset': applyPreset(Number(el.dataset.i)); break;
+      case 'scan-run': runScan(); break;
+      case 'scan-stop': scanCtl && scanCtl.abort(); break;
+      case 'scan-reset': if (state.scan.url) URL.revokeObjectURL(state.scan.url); setScan({ file: null, url: null, results: null, error: '', remarque: '' }); break;
+      case 'scan-save': saveScan(); break;
+      case 'plan-run': runPlan(); break;
+      case 'plan-stop': planCtl && planCtl.abort(); break;
+      case 'plan-apply': applyPlan(); break;
+      case 'plan-discard': setPlan({ proposal: null }); break;
+      case 'copy-list': {
+        const text = shoppingText();
+        try { await navigator.clipboard.writeText(text); toast('Liste copiée.'); }
+        catch (_) { toast('Copie refusée par le navigateur.'); }
+        break;
+      }
+    }
+  });
+
+  document.addEventListener('input', (ev) => {
+    const t = ev.target;
+    if (t.id === 'q') { state = { ...state, q: t.value }; render(); return; }
+    if (t.id === 'cat-q') { catQ = t.value; const pos = t.selectionStart; renderCatalogue(); const n = $('#cat-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } return; }
+    const bind = t.dataset && t.dataset.bind;
+    if (!bind) return;
+    const i = Number(t.dataset.i);
+    const patchRow = (patch, rerender) => {
+      const results = state.scan.results.map((r, k) => (k === i ? { ...r, ...patch } : r));
+      state = { ...state, scan: { ...state.scan, results } };
+      if (rerender) render();
+    };
+    if (bind === 'found-nom') patchRow({ nom: t.value, merge: !!findMatch(t.value) }, false);
+    else if (bind === 'found-q') patchRow({ quantite: Math.max(0, num(t.value, 0)) }, false);
+    else if (bind === 'plan-notes') state = { ...state, plan: { ...state.plan, notes: t.value } };
+  });
+
+  document.addEventListener('change', async (ev) => {
+    const t = ev.target;
+    if (t.id === 'scan-file') { pickScanFile(t.files && t.files[0]); return; }
+    if (t.id === 's-restore') { if (t.files && t.files[0]) restore(t.files[0]); t.value = ''; return; }
+    if (t.id === 'i-photo') {
+      const f = t.files && t.files[0];
+      if (!f) return;
+      try {
+        const { img, url } = await loadImage(f);
+        const data = toThumb(img);
+        URL.revokeObjectURL(url);
+        $('#dlg').dataset.newPhoto = data;
+        $('#i-thumb').innerHTML = `<img alt="" src="${data}">`;
+      } catch (_) { toast('Cette image ne peut pas être ouverte.'); }
+      return;
+    }
+    const bind = t.dataset && t.dataset.bind;
+    if (!bind) return;
+    const i = Number(t.dataset.i);
+    const patchRow = (patch) => {
+      const results = state.scan.results.map((r, k) => (k === i ? { ...r, ...patch } : r));
+      setScan({ results });
+    };
+    if (bind === 'found-keep') patchRow({ keep: t.checked });
+    else if (bind === 'found-cat') patchRow({ categorie: t.value });
+    else if (bind === 'found-merge') patchRow({ merge: t.value === 'merge' });
+    else if (bind === 'found-nom' || bind === 'found-q') render();
+    else if (bind === 'scan-zone') state = { ...state, scan: { ...state.scan, zoneId: t.value } };
+  });
+
+  document.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    if (ev.target.id === 'item-form') submitItem();
+    if (ev.target.id === 'zone-form') submitZone();
+    if (ev.target.id === 'settings-form') submitSettings();
+    if (ev.target.id === 'move-form') { const dlg = $('#dlg'); const id = dlg.dataset.moveId; const zid = $('#m-zone').value; const empl = $('#m-empl').value.trim(); dlg.close(); moveItem(id, zid, empl); }
+  });
+
+  let dragId = null;
+  document.addEventListener('dragstart', (ev) => {
+    const li = ev.target.closest && ev.target.closest('[data-drag]');
+    if (!li) return;
+    dragId = li.dataset.drag;
+    li.classList.add('is-dragging');
+    try { ev.dataTransfer.setData('text/plain', dragId); ev.dataTransfer.effectAllowed = 'move'; } catch (_) {}
+  });
+  document.addEventListener('dragend', () => { dragId = null; document.querySelectorAll('.is-dragging, .is-target').forEach((el) => el.classList.remove('is-dragging', 'is-target')); });
+  ['dragover', 'dragleave', 'drop'].forEach((type) => document.addEventListener(type, (ev) => {
+    const zone = dragId && ev.target.closest && ev.target.closest('[data-zone]');
+    if (zone) {
+      ev.preventDefault();
+      if (type === 'dragover') { ev.dataTransfer.dropEffect = 'move'; zone.classList.add('is-target'); }
+      else zone.classList.remove('is-target');
+      if (type === 'drop') {
+        const it = state.items.find((x) => x.id === dragId);
+        const target = zone.dataset.zone;
+        if (it && (it.zoneId || '') !== target) moveItem(dragId, target, target ? '' : it.emplacement);
+        dragId = null;
+      }
+      return;
+    }
+    const drop = ev.target.closest && ev.target.closest('#drop');
+    if (!drop) return;
+    ev.preventDefault();
+    drop.classList.toggle('is-over', type === 'dragover');
+    if (type === 'drop') pickScanFile(ev.dataTransfer.files && ev.dataTransfer.files[0]);
+  }));
+
+  // ---------- Démarrage ----------
+  function showInstallHint() {
+    const standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (standalone || !ios || lsGet(LS.installHidden)) return;
+    const b = $('#banner');
+    b.hidden = false;
+    b.innerHTML = `<p class="install"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+      <span><strong>Installer Établi :</strong> touchez <strong>Partager</strong> dans Safari, puis <strong>Sur l'écran d'accueil</strong>.</span>
+      <button class="btn btn--sm btn--ghost" data-act="install-hide">OK</button></p>`;
+  }
+
+  async function init() {
+    const [items, zones] = await Promise.all([idb.all('items'), idb.all('zones')]);
+    state = { ...state, items, zones, phase: 'live' };
+    renderWho();
+    render();
+    showInstallHint();
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  }
+
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch((e) => console.error(e)));
+  }
+
+  $('#dlg').addEventListener('close', () => $('#dlg').classList.remove('dlg-wide'));
+
+  render();
+  init().catch((e) => {
+    console.error(e);
+    $('#view').innerHTML = '<div class="empty"><h3>Stockage indisponible</h3><p>Safari bloque le stockage (navigation privée ?). Ouvrez Établi depuis l\'écran d\'accueil ou une fenêtre normale.</p></div>';
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "Établi — inventaire d'atelier",
+  "short_name": "Établi",
+  "description": "Inventaire d'atelier : photo, reconnaissance des outils, zones de rangement, liste à racheter.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eceef0",
+  "theme_color": "#6a4fc4",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
