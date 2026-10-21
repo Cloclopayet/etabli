@@ -199,10 +199,40 @@ main { max-width: 960px; margin: 0 auto; padding-inline: 16px; padding-block: 18
 .shop-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
 .shop-row b { font-weight: 600; overflow-wrap: anywhere; }
 .shop-row .mono { font-family: var(--f-mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.add-line { display: grid; grid-template-columns: minmax(0, 1fr) 80px 110px auto; gap: 8px; align-items: end; }
+.order-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--cat, var(--line)); border-radius: 8px; padding: 8px 10px; }
+.order-row b { font-weight: 600; overflow-wrap: anywhere; }
+.order-row .row { justify-content: flex-end; }
+.order-row--done { opacity: .7; }
+.pill--new { color: var(--accent-text); }
+.pill--ok { color: var(--ok); }
+.pill--wait { color: var(--muted); }
+.qty--sm button { width: 30px; height: 32px; font-size: 16px; }
+.qty--sm output { min-width: 40px; font-size: 14px; }
+.task { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); display: grid; overflow: hidden; }
+.task__head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; background: var(--panel-2); border-bottom: 1px solid var(--line); }
+.task__title { font-weight: 600; overflow-wrap: anywhere; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
+.task__title:hover { text-decoration: underline; }
+.task ul { list-style: none; margin: 0; padding: 6px 12px 10px; display: grid; gap: 2px; font-size: 14px; }
+.task li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px dotted var(--line); align-items: center; }
+.task li:last-child { border-bottom: 0; }
+.task__foot { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 8px 12px 12px; }
+.task--done { opacity: .65; }
+.need-row { display: grid; grid-template-columns: minmax(0, 1fr) 70px 90px auto; gap: 6px; align-items: center; }
+.need-row input { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); min-height: 38px; }
+.needs { display: grid; gap: 6px; }
+@media (max-width: 640px) {
+  .add-line { grid-template-columns: minmax(0, 1fr) 70px; }
+  .add-line .field:nth-child(3) { grid-column: 1; }
+  .order-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .order-row .row { grid-column: 1 / -1; }
+  .need-row { grid-template-columns: minmax(0, 1fr) 60px auto; }
+  .need-row .need-u { display: none; }
+}
 
 /* Barre d'onglets */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
-.tabs__in { max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tabs__in { max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .tab { border: 0; background: none; padding: 8px 4px 10px; display: grid; justify-items: center; gap: 2px; cursor: pointer; color: var(--muted); font-size: 12px; font-weight: 500; position: relative; }
 .tab svg { width: 22px; height: 22px; }
 .tab[aria-current="page"] { color: var(--ink); }
@@ -339,9 +369,13 @@ dialog.dlg-wide { width: min(820px, calc(100vw - 24px)); }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
       Rangement
     </button>
+    <button class="tab" data-tab="taches">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M8.5 10.5l1.5 1.5 3-3M8.5 16.5l1.5 1.5 3-3"/></svg>
+      Tâches
+    </button>
     <button class="tab" data-tab="racheter">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11h11.2L21 8H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
-      À racheter
+      Courses
     </button>
   </div>
 </nav>
@@ -557,6 +591,8 @@ dialog.dlg-wide { width: min(820px, calc(100vw - 24px)); }
     phase: 'loading',          // loading | live | demo
     tab: 'inventaire',
     items: [], zones: [],
+    orders: [],                // liste de courses : { nom, quantite, unite, categorie, itemId, taskId, statut: a_commander | commande | recu }
+    tasks: [],                 // tâches : { titre, notes, besoins: [{ nom, quantite, unite, itemId }], statut: ouverte | terminee }
     q: '', cat: 'all',
     scan: { file: null, url: null, zoneId: '', busy: false, error: '', results: null, remarque: '' },
     plan: { busy: false, error: '', notes: '', proposal: null, applying: false },
@@ -602,13 +638,13 @@ dialog.dlg-wide { width: min(820px, calc(100vw - 24px)); }
   }
 
   // ---------- Stockage local (IndexedDB, sur l'appareil) ----------
-  const STORES = ['items', 'zones', 'photos'];
+  const STORES = ['items', 'zones', 'photos', 'orders', 'tasks'];
   const idb = {
     db: null,
     open() {
       if (this.db) return Promise.resolve(this.db);
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('etabli', 1);
+        const req = indexedDB.open('etabli', 2);
         req.onupgradeneeded = () => STORES.forEach((n) => { if (!req.result.objectStoreNames.contains(n)) req.result.createObjectStore(n, { keyPath: 'id' }); });
         req.onsuccess = () => { this.db = req.result; resolve(this.db); };
         req.onerror = () => reject(req.error);
@@ -828,17 +864,17 @@ dialog.dlg-wide { width: min(820px, calc(100vw - 24px)); }
     document.querySelectorAll('.tab').forEach((t) => {
       if (t.dataset.tab === state.tab) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
     });
-    const low = state.items.filter(isLow).length;
+    const toBuy = state.orders.filter((o) => o.statut === 'a_commander').length + lowSuggestions().length;
     const tabBuy = $('.tab[data-tab="racheter"]');
     const oldBadge = tabBuy.querySelector('.badge');
     if (oldBadge) oldBadge.remove();
-    if (low) tabBuy.insertAdjacentHTML('beforeend', `<span class="badge">${low}</span>`);
+    if (toBuy) tabBuy.insertAdjacentHTML('beforeend', `<span class="badge">${toBuy}</span>`);
 
     const view = $('#view');
     if (state.phase === 'loading') {
       view.innerHTML = '<div class="skeleton" aria-label="Chargement de l\'atelier"><div></div><div></div><div></div></div>';
     } else {
-      view.innerHTML = ({ inventaire: viewInventaire, scanner: viewScanner, rangement: viewRangement, racheter: viewRacheter })[state.tab]();
+      view.innerHTML = ({ inventaire: viewInventaire, scanner: viewScanner, rangement: viewRangement, taches: viewTaches, racheter: viewRacheter })[state.tab]();
     }
 
     if (focusId) {
@@ -1290,33 +1326,336 @@ Dans "zones", liste toutes les zones utilisées (existantes et nouvelles).`;
     toast(n ? `${n} zone${n > 1 ? 's' : ''} créée${n > 1 ? 's' : ''}. Collez les codes sur vos rangements.` : 'Ces zones existent déjà.');
   }
 
-  // ---------- À racheter ----------
+  // ---------- Courses : à commander → commandé → réceptionné ----------
+  const isOpen = (o) => o.statut !== 'recu';
+  const catalogueMatch = (nom) => { const n = norm(nom); return n ? CATALOGUE.find((c) => norm(c.nom) === n) || null : null; };
+  // L'article de l'établi qui correspond à une ligne (lien direct, sinon même nom).
+  const itemFor = (x) => (x.itemId && state.items.find((it) => it.id === x.itemId)) || findMatch(x.nom);
+  const sameThing = (a, b) => {
+    const ia = itemFor(a), ib = itemFor(b);
+    return ia && ib ? ia.id === ib.id : norm(a.nom) === norm(b.nom);
+  };
+  const stockOf = (x) => { const it = itemFor(x); return it ? num(it.quantite) : 0; };
+  const openQty = (x) => state.orders.filter((o) => isOpen(o) && sameThing(o, x)).reduce((s, o) => s + num(o.quantite), 0);
+  // Stock bas sans commande en cours : proposé en un clic.
+  const lowSuggestions = () => state.items.filter((it) => isLow(it) && !state.orders.some((o) => isOpen(o) && sameThing(o, it))).sort(byName);
+  const suggestQty = (it) => Math.max(1, 2 * num(it.seuil) - num(it.quantite));
+
+  // Ajoute à la liste ; si la même chose attend déjà d'être commandée, on augmente sa quantité.
+  async function addOrder(line, quiet) {
+    const q = Math.max(0, num(line.quantite, 1));
+    if (!q || !String(line.nom || '').trim()) return false;
+    const ex = state.orders.find((o) => o.statut === 'a_commander' && sameThing(o, line));
+    if (ex) {
+      return safe(() => store.update('orders', ex.id, { quantite: num(ex.quantite) + q, taskId: ex.taskId || line.taskId || null, updatedAt: now() }), quiet ? '' : `${ex.nom} : ${fmtQty(num(ex.quantite) + q)} à commander.`);
+    }
+    const it = itemFor(line);
+    const c = catalogueMatch(line.nom);
+    const rec = {
+      nom: it ? it.nom : String(line.nom).trim(), quantite: q,
+      unite: line.unite || (it && it.unite) || (c && c.unite) || 'pièce',
+      categorie: (it && it.categorie) || (c && c.cat) || line.categorie || 'Autre',
+      itemId: it ? it.id : null, taskId: line.taskId || null, notes: line.notes || '',
+      statut: 'a_commander', createdAt: now(), updatedAt: now()
+    };
+    return safe(() => store.add('orders', rec), quiet ? '' : `${rec.nom} ajouté à la liste${it ? '' : ' (nouvel article)'}.`);
+  }
+
+  function orderRow(o) {
+    const it = itemFor(o);
+    const task = o.taskId && state.tasks.find((t) => t.id === o.taskId);
+    const meta = [];
+    meta.push(it ? `<span>en stock : ${esc(fmtQty(it.quantite))} ${esc(it.unite || '')}</span>` : '<span class="pill pill--new">pas dans l\'établi</span>');
+    if (task) meta.push(`<span>pour « ${esc(task.titre)} »</span>`);
+    if (o.statut === 'commande' && o.orderedAt) meta.push(`<span>commandé le ${esc(new Date(o.orderedAt).toLocaleDateString('fr-FR'))}</span>`);
+    if (o.statut === 'recu') meta.push(`<span class="pill pill--ok">reçu ${esc(fmtQty(o.quantiteRecue ?? o.quantite))} le ${esc(new Date(o.receivedAt).toLocaleDateString('fr-FR'))}</span>`);
+    const qty = o.statut === 'a_commander'
+      ? `<div class="qty qty--sm" aria-label="Quantité à commander de ${esc(o.nom)}"><button data-act="o-dec" data-id="${esc(o.id)}" aria-label="Un de moins">−</button><output>${esc(fmtQty(o.quantite))}<small>${esc(o.unite || 'pièce')}</small></output><button data-act="o-inc" data-id="${esc(o.id)}" aria-label="Un de plus">+</button></div>`
+      : `<span class="mono">${esc(fmtQty(o.quantite))} ${esc(o.unite || 'pièce')}</span>`;
+    const acts = o.statut === 'a_commander'
+      ? `<button class="btn btn--sm" data-act="o-ordered" data-id="${esc(o.id)}">Commandé</button><button class="btn btn--sm btn--main" data-act="o-receive" data-id="${esc(o.id)}">Réceptionner</button><button class="icon-btn" data-act="o-del" data-id="${esc(o.id)}" aria-label="Retirer ${esc(o.nom)} de la liste" title="Retirer">${ICON_X}</button>`
+      : o.statut === 'commande'
+        ? `<button class="btn btn--sm btn--ghost" data-act="o-back" data-id="${esc(o.id)}">Annuler la commande</button><button class="btn btn--sm btn--main" data-act="o-receive" data-id="${esc(o.id)}">Réceptionner</button>`
+        : '';
+    return `
+      <div class="order-row${o.statut === 'recu' ? ' order-row--done' : ''}" style="--cat:${catColor(o.categorie || 'Autre')}">
+        <div style="min-width:0"><b>${esc(o.nom)}</b><div class="item__meta">${meta.join('')}</div></div>
+        ${qty}
+        ${acts ? `<div class="row">${acts}</div>` : ''}
+      </div>`;
+  }
+  const ICON_X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function nameOptions() {
+    const names = new Set([...state.items.map((it) => it.nom), ...CATALOGUE.map((c) => c.nom)]);
+    return [...names].sort((a, b) => a.localeCompare(b, 'fr')).map((n) => `<option value="${esc(n)}"></option>`).join('');
+  }
+
   function viewRacheter() {
-    const low = state.items.filter(isLow).sort(byName);
+    const todo = state.orders.filter((o) => o.statut === 'a_commander').sort(byName);
+    const wait = state.orders.filter((o) => o.statut === 'commande').sort(byName);
+    const done = state.orders.filter((o) => o.statut === 'recu').sort((a, b) => String(b.receivedAt).localeCompare(String(a.receivedAt))).slice(0, 15);
+    const sugg = lowSuggestions();
     const fix = state.items.filter((it) => it.etat === 'à réparer').sort(byName);
-    const block = (title, list, kind) => list.length ? `
-      <div class="panel">
-        <h3>${title}</h3>
-        <div class="shop">${list.map((it) => `
-          <div class="shop-row">
-            <div style="min-width:0"><b>${esc(it.nom)}</b><div class="item__meta">${zoneTag(it)}${it.notes ? `<span>${esc(it.notes)}</span>` : ''}</div></div>
-            ${kind === 'low' ? `<span class="mono">${esc(fmtQty(it.quantite))} / seuil ${esc(fmtQty(it.seuil))}</span>` : '<span></span>'}
-            <button class="btn btn--sm" data-act="edit" data-id="${esc(it.id)}">Ouvrir</button>
-          </div>`).join('')}</div>
-      </div>` : '';
+    const panel = (title, body, extra = '') => `<div class="panel"><div class="section-head"><h3>${title}</h3>${extra}</div>${body}</div>`;
     return `
       <div class="section-head">
-        <div><h2>À racheter</h2><p class="lead">Les articles sous leur seuil d'alerte et ceux marqués « à réparer ». Réglez le seuil dans la fiche d'un article (ex. 1 boîte de vis).</p></div>
-        ${low.length ? '<button class="btn btn--main" data-act="copy-list">Copier la liste de courses</button>' : ''}
+        <div><h2>Courses</h2><p class="lead">Ajoutez n'importe quel article, même s'il n'est pas encore dans l'établi. Passez-le en « Commandé », puis « Réceptionner » : le stock est mis à jour et l'article est créé s'il n'existait pas.</p></div>
+        ${todo.length ? '<button class="btn btn--main" data-act="copy-list">Copier la liste</button>' : ''}
       </div>
       <div class="hazard" aria-hidden="true"></div>
-      ${low.length || fix.length ? block('Stock bas', low, 'low') + block('À réparer ou remplacer', fix, 'fix')
-        : '<div class="empty"><h3>Rien à racheter</h3><p>Donnez un seuil d\'alerte à vos consommables (vis, abrasifs, forets, colle) : ils apparaîtront ici quand le stock descend.</p></div>'}`;
+      <form class="panel" id="order-form" autocomplete="off">
+        <h3>Ajouter à la liste</h3>
+        <div class="add-line">
+          <label class="field"><span>Article</span><input id="o-nom" list="o-names" maxlength="120" placeholder="Vis inox 5 × 50, colle PU…" required></label>
+          <label class="field"><span>Quantité</span><input id="o-q" inputmode="decimal" value="1"></label>
+          <label class="field"><span>Unité</span><input id="o-unite" list="units-o" placeholder="pièce"></label>
+          <button type="submit" class="btn btn--main">Ajouter</button>
+        </div>
+        <datalist id="o-names">${nameOptions()}</datalist>
+        <datalist id="units-o">${UNITES.map((u) => `<option>${u}</option>`).join('')}</datalist>
+      </form>
+      ${sugg.length ? panel('Stock bas', `<div class="shop">${sugg.map((it) => `
+          <div class="shop-row">
+            <div style="min-width:0"><b>${esc(it.nom)}</b><div class="item__meta">${zoneTag(it)}<span>reste ${esc(fmtQty(it.quantite))} / seuil ${esc(fmtQty(it.seuil))}</span></div></div>
+            <span class="mono">+${esc(fmtQty(suggestQty(it)))} ${esc(it.unite || 'pièce')}</span>
+            <button class="btn btn--sm" data-act="o-suggest" data-id="${esc(it.id)}">Ajouter</button>
+          </div>`).join('')}</div>`, sugg.length > 1 ? '<button class="btn btn--sm" data-act="o-suggest-all">Tout ajouter</button>' : '') : ''}
+      ${panel(`À commander${todo.length ? ` · ${todo.length}` : ''}`, todo.length ? `<div class="shop">${todo.map(orderRow).join('')}</div>` : '<p class="note">Rien à commander pour l\'instant.</p>',
+        todo.length > 1 ? '<button class="btn btn--sm" data-act="o-ordered-all">Tout marquer commandé</button>' : '')}
+      ${wait.length ? panel(`Commandé, en attente · ${wait.length}`, `<div class="shop">${wait.map(orderRow).join('')}</div>`) : ''}
+      ${fix.length ? panel('À réparer ou remplacer', `<div class="shop">${fix.map((it) => `
+          <div class="shop-row">
+            <div style="min-width:0"><b>${esc(it.nom)}</b><div class="item__meta">${zoneTag(it)}${it.notes ? `<span>${esc(it.notes)}</span>` : ''}</div></div>
+            <button class="btn btn--sm" data-act="o-replace" data-id="${esc(it.id)}">Commander</button>
+            <button class="btn btn--sm" data-act="edit" data-id="${esc(it.id)}">Ouvrir</button>
+          </div>`).join('')}</div>`) : ''}
+      ${done.length ? panel('Réceptionné récemment', `<div class="shop">${done.map(orderRow).join('')}</div>`, '<button class="btn btn--sm btn--ghost" data-act="o-clear">Vider</button>') : ''}`;
   }
 
   function shoppingText() {
-    return 'Liste bricolage\n' + state.items.filter(isLow).sort(byName)
-      .map((it) => `- ${it.nom} (reste ${fmtQty(it.quantite)} ${it.unite || 'pièce'})${it.marque ? ' — ' + it.marque : ''}`).join('\n');
+    return 'Liste bricolage\n' + state.orders.filter((o) => o.statut === 'a_commander').sort(byName)
+      .map((o) => `- ${fmtQty(o.quantite)} ${o.unite || 'pièce'} · ${o.nom}`).join('\n');
+  }
+
+  async function bumpOrder(id, delta) {
+    const o = state.orders.find((x) => x.id === id);
+    if (!o) return;
+    const q = num(o.quantite) + delta;
+    if (q <= 0) { await safe(() => store.remove('orders', id), `${o.nom} retiré de la liste.`); return; }
+    await safe(() => store.update('orders', id, { quantite: q, updatedAt: now() }));
+  }
+
+  function openReceive(id) {
+    const o = state.orders.find((x) => x.id === id);
+    if (!o) return;
+    const it = itemFor(o);
+    const c = catalogueMatch(o.nom);
+    const dlg = $('#dlg');
+    dlg.innerHTML = `
+      <form class="dlg" id="receive-form" method="dialog">
+        <h2>Réceptionner</h2>
+        <p class="dlg__from"><strong>${esc(o.nom)}</strong> · commandé : ${esc(fmtQty(o.quantite))} ${esc(o.unite || 'pièce')}</p>
+        <label class="field"><span>Quantité reçue</span><input id="r-q" inputmode="decimal" value="${esc(fmtQty(o.quantite))}"></label>
+        ${it ? `<p class="note">Dans l'établi : ${esc(fmtQty(it.quantite))} ${esc(it.unite || '')} → le stock sera augmenté.${zoneById(it.zoneId) ? ` Rangé en ${esc(zoneById(it.zoneId).code)}.` : ''}</p>`
+          : `<p class="note">Cet article n'est pas encore dans l'établi : il sera créé.</p>
+        <div class="grid2">
+          <label class="field"><span>Catégorie</span><select id="r-cat">${catOptions(o.categorie || (c && c.cat) || 'Autre')}</select></label>
+          <label class="field"><span>Alerte si ≤</span><input id="r-seuil" inputmode="decimal" value="${esc(fmtQty(c ? c.seuil : 0))}"></label>
+        </div>
+        <div class="grid2">
+          <label class="field"><span>Zone</span><select id="r-zone">${zoneOptions('')}</select></label>
+          <label class="field"><span>Emplacement précis</span><input id="r-empl" maxlength="80" placeholder="Tiroir 2, bac B-04…"></label>
+        </div>`}
+        <p class="note">Si vous recevez moins que commandé, le reste reste « commandé ».</p>
+        <p class="error" id="r-err" hidden></p>
+        <div class="dlg__foot"><span></span><div class="row"><button type="button" class="btn btn--ghost" data-act="dlg-close">Annuler</button><button type="submit" class="btn btn--main">Mettre en stock</button></div></div>
+      </form>`;
+    dlg.dataset.orderId = id;
+    dlg.showModal();
+    $('#r-q').select();
+  }
+
+  async function submitReceive() {
+    const dlg = $('#dlg');
+    const o = state.orders.find((x) => x.id === dlg.dataset.orderId);
+    if (!o) { dlg.close(); return; }
+    const q = num($('#r-q').value, NaN);
+    const err = $('#r-err');
+    if (!Number.isFinite(q) || q <= 0) { err.textContent = 'Indiquez la quantité reçue (plus que 0).'; err.hidden = false; return; }
+    const it = itemFor(o);
+    const form = it ? null : { categorie: $('#r-cat').value, seuil: Math.max(0, num($('#r-seuil').value, 0)), zoneId: $('#r-zone').value || null, emplacement: $('#r-empl').value.trim() };
+    dlg.close();
+    let itemId = it && it.id;
+    if (it) {
+      if (await safe(() => store.update('items', it.id, { quantite: num(it.quantite) + q, updatedAt: now() })) === undefined) return;
+    } else {
+      const c = catalogueMatch(o.nom);
+      itemId = await safe(() => store.add('items', {
+        nom: o.nom, categorie: form.categorie, quantite: q, unite: o.unite || 'pièce', seuil: form.seuil,
+        zoneId: form.zoneId, emplacement: form.emplacement, marque: '', etat: 'bon', notes: '', pic: c ? c.pic : undefined,
+        photoId: null, createdAt: now(), updatedAt: now()
+      }));
+      if (itemId === undefined) return;
+    }
+    const rest = num(o.quantite) - q;
+    if (rest > 0) {
+      await safe(() => store.update('orders', o.id, { quantite: rest, itemId, statut: 'commande', orderedAt: o.orderedAt || now(), updatedAt: now() }));
+      const { id: _old, ...copy } = o;
+      await safe(() => store.add('orders', { ...copy, quantite: q, quantiteRecue: q, itemId, statut: 'recu', receivedAt: now(), updatedAt: now() }));
+      toast(`${fmtQty(q)} reçu · reste ${fmtQty(rest)} en attente.`);
+    } else {
+      await safe(() => store.update('orders', o.id, { quantiteRecue: q, itemId, statut: 'recu', receivedAt: now(), updatedAt: now() }));
+      toast(`${o.nom} : +${fmtQty(q)} en stock${it ? '' : ' (nouvel article)'}.`, 'win');
+    }
+  }
+
+  // ---------- Tâches : le matériel nécessaire, comparé à l'établi ----------
+  // Ce qu'il faut encore commander pour une ligne, en tenant compte des autres tâches ouvertes et des commandes en cours.
+  function missingToOrder(b, taskId) {
+    const other = state.tasks.filter((t) => t.statut !== 'terminee' && t.id !== taskId)
+      .flatMap((t) => t.besoins || []).filter((x) => sameThing(x, b)).reduce((s, x) => s + num(x.quantite), 0);
+    return Math.min(num(b.quantite), Math.max(0, num(b.quantite) + other - stockOf(b) - openQty(b)));
+  }
+
+  function needStatus(b, taskId) {
+    const need = num(b.quantite), stock = stockOf(b), unit = esc(b.unite || (itemFor(b) || {}).unite || 'pièce');
+    if (stock >= need) return `<span class="pill pill--ok">en stock (${esc(fmtQty(stock))})</span>`;
+    const miss = missingToOrder(b, taskId);
+    if (!miss) return `<span class="pill pill--wait">en commande</span>`;
+    return `<span class="pill pill--low">manque ${esc(fmtQty(miss))} ${unit}</span>`;
+  }
+
+  function viewTaches() {
+    const open = state.tasks.filter((t) => t.statut !== 'terminee').sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    const done = state.tasks.filter((t) => t.statut === 'terminee').sort((a, b) => String(b.doneAt).localeCompare(String(a.doneAt)));
+    const card = (t) => {
+      const besoins = t.besoins || [];
+      const ready = besoins.every((b) => stockOf(b) >= num(b.quantite));
+      const missing = t.statut !== 'terminee' && besoins.some((b) => missingToOrder(b, t.id) > 0);
+      return `
+        <article class="task${t.statut === 'terminee' ? ' task--done' : ''}">
+          <div class="task__head">
+            <button class="task__title" data-act="task-edit" data-id="${esc(t.id)}">${esc(t.titre)}</button>
+            ${t.statut === 'terminee' ? '<span class="pill pill--ok">terminée</span>' : besoins.length ? (ready ? '<span class="pill pill--ok">tout est là</span>' : '<span class="pill pill--low">matériel manquant</span>') : ''}
+          </div>
+          ${t.notes ? `<p class="note" style="padding:8px 12px 0">${esc(t.notes)}</p>` : ''}
+          ${besoins.length ? `<ul>${besoins.map((b) => { const it = itemFor(b); const z = it && zoneById(it.zoneId); return `<li><span>${esc(fmtQty(b.quantite))} ${esc(b.unite || (it && it.unite) || 'pièce')} · ${esc(b.nom)}${z ? ` <span class="tag">${esc(z.code)}</span>` : ''}</span>${t.statut === 'terminee' ? '' : needStatus(b, t.id)}</li>`; }).join('')}</ul>` : '<p class="note" style="padding:8px 12px">Aucun matériel indiqué.</p>'}
+          <div class="task__foot">
+            ${t.statut === 'terminee'
+              ? `<span class="note">Terminée le ${esc(new Date(t.doneAt).toLocaleDateString('fr-FR'))}</span><button class="btn btn--sm btn--ghost" data-act="task-reopen" data-id="${esc(t.id)}">Rouvrir</button>`
+              : `${missing ? `<button class="btn btn--sm" data-act="task-shop" data-id="${esc(t.id)}">Ajouter les manquants aux courses</button>` : '<span></span>'}<button class="btn btn--sm btn--main" data-act="task-done" data-id="${esc(t.id)}">Terminer</button>`}
+          </div>
+        </article>`;
+    };
+    return `
+      <div class="section-head">
+        <div><h2>Tâches</h2><p class="lead">Notez un chantier et le matériel qu'il demande. Établi vérifie votre stock et met automatiquement ce qui manque sur la liste de courses.</p></div>
+        <button class="btn btn--main" data-act="task-new">+ Tâche</button>
+      </div>
+      ${open.length ? `<div class="list">${open.map(card).join('')}</div>`
+        : `<div class="empty"><h3>Aucune tâche en cours</h3><p>Exemple : « Poser l'étagère du garage » avec 4 chevilles Ø 8, 4 vis 5 × 60, 2 équerres. Ce qui manque part dans les courses.</p><div class="toolbar"><button class="btn btn--main" data-act="task-new">Créer une tâche</button></div></div>`}
+      ${done.length ? `<details class="panel"><summary>Tâches terminées (${done.length})</summary><div class="list" style="margin-top:10px">${done.map(card).join('')}</div></details>` : ''}`;
+  }
+
+  const needRowHtml = (b = {}) => `
+    <div class="need-row">
+      <input class="need-nom" list="t-names" maxlength="120" placeholder="Article" value="${esc(b.nom || '')}" aria-label="Article">
+      <input class="need-q" inputmode="decimal" value="${esc(fmtQty(b.quantite ?? 1))}" aria-label="Quantité">
+      <input class="need-u" list="units-t" placeholder="unité" value="${esc(b.unite || '')}" aria-label="Unité">
+      <button type="button" class="icon-btn" data-act="need-del" aria-label="Retirer la ligne">${ICON_X}</button>
+    </div>`;
+
+  function openTask(id) {
+    const t = id ? state.tasks.find((x) => x.id === id) : null;
+    const v = t || { titre: '', notes: '', besoins: [] };
+    const dlg = $('#dlg');
+    dlg.innerHTML = `
+      <form class="dlg" id="task-form" method="dialog" autocomplete="off">
+        <h2>${t ? 'Tâche' : 'Nouvelle tâche'}</h2>
+        <label class="field"><span>Tâche</span><input id="t-titre" required maxlength="120" value="${esc(v.titre)}" placeholder="Poser l'étagère du garage"></label>
+        <label class="field"><span>Notes</span><textarea id="t-notes" maxlength="500" placeholder="Pour samedi, mur en placo…">${esc(v.notes)}</textarea></label>
+        <div class="field"><span>Matériel nécessaire</span>
+          <div class="needs" id="t-needs">${(v.besoins.length ? v.besoins : [{}]).map(needRowHtml).join('')}</div>
+        </div>
+        <div class="row"><button type="button" class="btn btn--sm" data-act="need-add">+ Ligne</button></div>
+        <datalist id="t-names">${nameOptions()}</datalist>
+        <datalist id="units-t">${UNITES.map((u) => `<option>${u}</option>`).join('')}</datalist>
+        <p class="note">À l'enregistrement, ce qui n'est pas dans l'établi (ou pas en quantité suffisante) est ajouté à la liste de courses.</p>
+        <p class="error" id="t-err" hidden></p>
+        <div class="dlg__foot">
+          ${t ? '<button type="button" class="btn btn--danger" data-act="task-del">Supprimer</button>' : '<span></span>'}
+          <div class="row"><button type="button" class="btn btn--ghost" data-act="dlg-close">Annuler</button><button type="submit" class="btn btn--main">Enregistrer</button></div>
+        </div>
+      </form>`;
+    dlg.dataset.taskId = t ? t.id : '';
+    dlg.showModal();
+    if (!t) $('#t-titre').focus();
+  }
+
+  // Ajoute aux courses tout ce qui manque pour une tâche ; renvoie le nombre de lignes ajoutées.
+  async function shopForTask(t) {
+    let n = 0;
+    for (const b of t.besoins || []) {
+      const miss = missingToOrder(b, t.id);
+      if (miss > 0 && await addOrder({ nom: b.nom, quantite: miss, unite: b.unite || '', itemId: b.itemId, taskId: t.id }, true) !== undefined) n++;
+    }
+    return n;
+  }
+
+  async function submitTask() {
+    const dlg = $('#dlg');
+    const id = dlg.dataset.taskId;
+    const titre = $('#t-titre').value.trim();
+    const err = $('#t-err');
+    if (!titre) { err.textContent = 'Donnez un nom à la tâche.'; err.hidden = false; return; }
+    const besoins = [...document.querySelectorAll('#t-needs .need-row')].map((row) => {
+      const nom = row.querySelector('.need-nom').value.trim();
+      const it = findMatch(nom);
+      return { nom: it ? it.nom : nom, quantite: Math.max(0, num(row.querySelector('.need-q').value, 1)), unite: row.querySelector('.need-u').value.trim() || (it && it.unite) || '', itemId: it ? it.id : null };
+    }).filter((b) => b.nom && b.quantite > 0);
+    const notes = $('#t-notes').value.trim();
+    dlg.close();
+    let tid = id;
+    if (id) { if (await safe(() => store.update('tasks', id, { titre, notes, besoins, updatedAt: now() })) === undefined) return; }
+    else {
+      tid = await safe(() => store.add('tasks', { titre, notes, besoins, statut: 'ouverte', createdAt: now(), updatedAt: now() }));
+      if (tid === undefined) return;
+    }
+    const n = await shopForTask(state.tasks.find((x) => x.id === tid));
+    toast(n ? `Tâche enregistrée · ${n} article${n > 1 ? 's' : ''} ajouté${n > 1 ? 's' : ''} aux courses.` : 'Tâche enregistrée · tout le matériel est disponible ou déjà commandé.', n ? '' : 'win');
+  }
+
+  function openTaskDone(id) {
+    const t = state.tasks.find((x) => x.id === id);
+    if (!t) return;
+    const used = (t.besoins || []).filter((b) => itemFor(b));
+    const dlg = $('#dlg');
+    dlg.innerHTML = `
+      <form class="dlg dlg--sm" id="task-done-form" method="dialog">
+        <h2>Terminer</h2>
+        <p class="dlg__from"><strong>${esc(t.titre)}</strong></p>
+        ${used.length ? `<label class="row"><input type="checkbox" id="td-use" checked style="width:20px;height:20px;accent-color:var(--accent)"> Retirer le matériel utilisé du stock</label>
+        <ul class="tips">${used.map((b) => { const it = itemFor(b); return `<li>${esc(b.nom)} : ${esc(fmtQty(it.quantite))} → ${esc(fmtQty(Math.max(0, num(it.quantite) - num(b.quantite))))}</li>`; }).join('')}</ul>` : '<p class="note">Aucun article de l\'établi à déduire.</p>'}
+        <div class="dlg__foot"><span></span><div class="row"><button type="button" class="btn btn--ghost" data-act="dlg-close">Annuler</button><button type="submit" class="btn btn--main">Terminer</button></div></div>
+      </form>`;
+    dlg.dataset.taskId = id;
+    dlg.showModal();
+  }
+
+  async function submitTaskDone() {
+    const dlg = $('#dlg');
+    const t = state.tasks.find((x) => x.id === dlg.dataset.taskId);
+    const use = $('#td-use') && $('#td-use').checked;
+    dlg.close();
+    if (!t) return;
+    if (use) {
+      for (const b of t.besoins || []) {
+        const it = itemFor(b);
+        if (it) await safe(() => store.update('items', it.id, { quantite: Math.max(0, num(it.quantite) - num(b.quantite)), updatedAt: now() }));
+      }
+    }
+    await safe(() => store.update('tasks', t.id, { statut: 'terminee', doneAt: now(), updatedAt: now() }), use ? 'Tâche terminée · stock mis à jour.' : 'Tâche terminée.');
   }
 
   // ---------- Fiche article / zone ----------
@@ -1351,7 +1690,7 @@ Dans "zones", liste toutes les zones utilisées (existantes et nouvelles).`;
         <label class="field"><span>Notes</span><textarea id="i-notes" maxlength="500" placeholder="Prêté à Paul, batterie 2 Ah…">${esc(v.notes)}</textarea></label>
         <p class="error" id="i-err" hidden></p>
         <div class="dlg__foot">
-          ${it ? '<button type="button" class="btn btn--danger" data-act="item-del">Supprimer</button>' : '<span></span>'}
+          ${it ? '<div class="row"><button type="button" class="btn btn--danger" data-act="item-del">Supprimer</button><button type="button" class="btn" data-act="item-order">Ajouter aux courses</button></div>' : '<span></span>'}
           <div class="row"><button type="button" class="btn btn--ghost" data-act="dlg-close">Annuler</button><button type="submit" class="btn btn--main">Enregistrer</button></div>
         </div>
       </form>`;
@@ -1468,7 +1807,7 @@ Dans "zones", liste toutes les zones utilisées (existantes et nouvelles).`;
 
   async function backup() {
     const photos = await idb.all('photos');
-    const data = { app: 'etabli', version: 1, date: now(), items: state.items, zones: state.zones, photos };
+    const data = { app: 'etabli', version: 2, date: now(), items: state.items, zones: state.zones, orders: state.orders, tasks: state.tasks, photos };
     const d = new Date().toISOString().slice(0, 10);
     const ok = await shareFile(`etabli-sauvegarde-${d}.json`, new Blob([JSON.stringify(data)], { type: 'application/json' }));
     if (ok) { lsSet(LS.lastBackup, now()); toast('Sauvegarde prête.'); }
@@ -1492,9 +1831,14 @@ Dans "zones", liste toutes les zones utilisées (existantes et nouvelles).`;
         await idb.replaceAll('items', data.items);
         await idb.replaceAll('zones', data.zones);
         await idb.replaceAll('photos', data.photos);
+        // Les sauvegardes v1 n'ont ni courses ni tâches.
+        const orders = Array.isArray(data.orders) ? data.orders : [];
+        const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+        await idb.replaceAll('orders', orders);
+        await idb.replaceAll('tasks', tasks);
         photoCache.clear();
         $('#dlg').close();
-        setState({ items: data.items, zones: data.zones });
+        setState({ items: data.items, zones: data.zones, orders, tasks });
         toast(`Sauvegarde restaurée : ${data.items.length} articles.`);
       } catch (e) { console.error(e); toast(dbMessage(e)); }
     };
@@ -1669,6 +2013,54 @@ Dans "zones", liste toutes les zones utilisées (existantes et nouvelles).`;
       case 'plan-stop': planCtl && planCtl.abort(); break;
       case 'plan-apply': applyPlan(); break;
       case 'plan-discard': setPlan({ proposal: null }); break;
+      case 'o-inc': bumpOrder(id, 1); break;
+      case 'o-dec': bumpOrder(id, -1); break;
+      case 'o-del': { const o = state.orders.find((x) => x.id === id); if (o) safe(() => store.remove('orders', id), `${o.nom} retiré de la liste.`); break; }
+      case 'o-ordered': safe(() => store.update('orders', id, { statut: 'commande', orderedAt: now(), updatedAt: now() }), 'Marqué commandé.'); break;
+      case 'o-ordered-all':
+        for (const o of state.orders.filter((x) => x.statut === 'a_commander')) await safe(() => store.update('orders', o.id, { statut: 'commande', orderedAt: now(), updatedAt: now() }));
+        toast('Tout est marqué commandé.'); break;
+      case 'o-back': safe(() => store.update('orders', id, { statut: 'a_commander', orderedAt: null, updatedAt: now() })); break;
+      case 'o-receive': openReceive(id); break;
+      case 'o-clear': for (const o of state.orders.filter((x) => x.statut === 'recu')) await safe(() => store.remove('orders', o.id)); break;
+      case 'o-suggest': { const it = state.items.find((x) => x.id === id); if (it) addOrder({ nom: it.nom, quantite: suggestQty(it), itemId: it.id }); break; }
+      case 'o-suggest-all':
+        for (const it of lowSuggestions()) await addOrder({ nom: it.nom, quantite: suggestQty(it), itemId: it.id }, true);
+        toast('Stock bas ajouté à la liste.'); break;
+      case 'o-replace': { const it = state.items.find((x) => x.id === id); if (it) addOrder({ nom: it.nom, quantite: 1, itemId: it.id }); break; }
+      case 'item-order': {
+        const it = state.items.find((x) => x.id === $('#dlg').dataset.itemId);
+        $('#dlg').close();
+        if (it) addOrder({ nom: it.nom, quantite: isLow(it) ? suggestQty(it) : 1, itemId: it.id });
+        break;
+      }
+      case 'task-new': openTask(null); break;
+      case 'task-edit': openTask(id); break;
+      case 'task-done': openTaskDone(id); break;
+      case 'task-reopen': safe(() => store.update('tasks', id, { statut: 'ouverte', doneAt: null, updatedAt: now() }), 'Tâche rouverte.'); break;
+      case 'task-shop': {
+        const t = state.tasks.find((x) => x.id === id);
+        const n = t ? await shopForTask(t) : 0;
+        toast(n ? `${n} article${n > 1 ? 's' : ''} ajouté${n > 1 ? 's' : ''} aux courses.` : 'Rien à ajouter.');
+        break;
+      }
+      case 'task-del': armOrRun(el, async () => {
+        const dlg = $('#dlg'); const tid = dlg.dataset.taskId;
+        dlg.close();
+        await safe(() => store.remove('tasks', tid), 'Tâche supprimée.');
+      }); break;
+      case 'need-add': {
+        $('#t-needs').insertAdjacentHTML('beforeend', needRowHtml());
+        const rows = document.querySelectorAll('#t-needs .need-nom');
+        rows[rows.length - 1].focus();
+        break;
+      }
+      case 'need-del': {
+        const row = el.closest('.need-row');
+        if (document.querySelectorAll('#t-needs .need-row').length > 1) row.remove();
+        else row.querySelectorAll('input').forEach((i) => { i.value = i.classList.contains('need-q') ? '1' : ''; });
+        break;
+      }
       case 'copy-list': {
         const text = shoppingText();
         try { await navigator.clipboard.writeText(text); toast('Liste copiée.'); }
@@ -1730,6 +2122,14 @@ Dans "zones", liste toutes les zones utilisées (existantes et nouvelles).`;
     if (ev.target.id === 'item-form') submitItem();
     if (ev.target.id === 'zone-form') submitZone();
     if (ev.target.id === 'settings-form') submitSettings();
+    if (ev.target.id === 'receive-form') submitReceive();
+    if (ev.target.id === 'task-form') submitTask();
+    if (ev.target.id === 'task-done-form') submitTaskDone();
+    if (ev.target.id === 'order-form') {
+      const nom = $('#o-nom').value.trim();
+      if (!nom) return;
+      addOrder({ nom, quantite: Math.max(0, num($('#o-q').value, 1)) || 1, unite: $('#o-unite').value.trim() }).then(() => { const n = $('#o-nom'); if (n) n.focus(); });
+    }
     if (ev.target.id === 'move-form') { const dlg = $('#dlg'); const id = dlg.dataset.moveId; const zid = $('#m-zone').value; const empl = $('#m-empl').value.trim(); dlg.close(); moveItem(id, zid, empl); }
   });
 
@@ -1776,8 +2176,8 @@ Dans "zones", liste toutes les zones utilisées (existantes et nouvelles).`;
   }
 
   async function init() {
-    const [items, zones] = await Promise.all([idb.all('items'), idb.all('zones')]);
-    state = { ...state, items, zones, phase: 'live' };
+    const [items, zones, orders, tasks] = await Promise.all([idb.all('items'), idb.all('zones'), idb.all('orders'), idb.all('tasks')]);
+    state = { ...state, items, zones, orders, tasks, phase: 'live' };
     renderWho();
     render();
     showInstallHint();

@@ -1,7 +1,7 @@
 // Établi — service worker : appli utilisable hors ligne.
 // Page : réseau d'abord (nouvelle version dès qu'il y a du réseau), cache en secours.
 // Icônes / manifeste / polices : cache d'abord. Appels à l'API Claude : jamais mis en cache.
-const VERSION = 'etabli-v1';
+const VERSION = 'etabli-v2';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
