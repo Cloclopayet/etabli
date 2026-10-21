@@ -599,7 +599,7 @@ dialog.dlg-wide { width: min(820px, calc(100vw - 24px)); }
     canImages: false
   };
   const SDK_URL = 'https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.129.0/+esm';
-  const MODEL = 'claude-opus-5-5';
+  const MODEL = 'claude-haiku-5-5';
   const LS = { key: 'etabli.apiKey', name: 'etabli.name', installHidden: 'etabli.installHidden', lastBackup: 'etabli.lastBackup' };
   const lsGet = (k) => { try { return localStorage.getItem(k) || ''; } catch (_) { return ''; } };
   const lsSet = (k, v) => { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (_) {} };
@@ -746,11 +746,9 @@ dialog.dlg-wide { width: min(820px, calc(100vw - 24px)); }
     content.push({ type: 'text', text: prompt });
     let response;
     try {
-      response = await client.beta.messages.create({
+      response = await client.messages.create({
         model: MODEL,
         max_tokens: 16000,
-        betas: ['server-side-fallback-2026-07-01'],
-        fallbacks: 'default',
         output_config: { effort: 'medium', format: { type: 'json_schema', schema } },
         messages: [{ role: 'user', content }]
       }, { signal });
@@ -1776,7 +1774,7 @@ Dans "zones", liste toutes les zones utilisées (existantes et nouvelles).`;
           <h3>Reconnaissance photo</h3>
           <p class="note">Statut : ${key ? `<span class="key-ok">clé enregistrée (…${esc(key.slice(-4))})</span>` : '<span class="key-missing">aucune clé</span>'}</p>
           <label class="field"><span>Clé API Anthropic</span><input id="s-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${key ? 'Laisser vide pour garder la clé actuelle' : 'sk-ant-…'}"></label>
-          <p class="note">Créez une clé sur <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> (Settings → API Keys) et fixez une limite de dépense mensuelle. La clé reste sur cet iPhone et part uniquement vers api.anthropic.com. Coût indicatif : quelques centimes par photo analysée.</p>
+          <p class="note">Créez une clé sur <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> (Settings → API Keys) et fixez une limite de dépense mensuelle. La clé reste sur cet iPhone et part uniquement vers api.anthropic.com. Coût indicatif : moins d'un centime par photo analysée.</p>
           ${key ? '<div class="row"><button type="button" class="btn btn--sm btn--danger" data-act="key-del">Retirer la clé</button></div>' : ''}
         </div>
         <div class="settings-block">
